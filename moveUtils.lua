@@ -1,9 +1,21 @@
---[
---Description : Negamax Supporting lib for BaghBandi.
---Author : Subhojit Basu
---Date : 21 May 2014
---]
 
-require "graph"
+function Heuristic(node,color)
+  
+  --check for game end condition
+  --return huge val if game ends
+  
+  --check if any tiger trapped
+  --return a positive value if goat
+  --negative otherwise
+  
+  --check if any goat eaten
+  --return a negative value if goat
+  -- return positive otherwise
+  
+end
+
+
+
+
 
  
