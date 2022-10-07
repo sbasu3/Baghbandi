@@ -1,11 +1,18 @@
 local node = {}
 
+node.__index = node
+
+node.data = {}
+
+node.data.__index = node.data
+
 function node.create(data,id)
-  local n
+  local n = {}
   
   setmetatable(n,node)
   
   n.data = data
+  --n.data = deepcopy(data)
   n.id = id
   n.value = nil
   n.num_children = 0
@@ -15,10 +22,26 @@ function node.create(data,id)
   
 end
 
+function node:clone(id)
+  local n = {}
+  
+  setmetatable(n,node)
+  
+  --n.data = self.data
+  n.data = deepcopy(self.data)
+  n.id = id
+  n.value = nil
+  n.num_children = 0
+  n.children = {}
+  
+  return n
+end
+
+
 function node:add_child(n)
   
   self.children[self.num_children] = n
-  self.num_children += 1
+  self.num_children = self.num_children + 1
   
 end
 
@@ -30,7 +53,7 @@ function node:delete_child(n)
       break
     end
   end
-  if self.num_children != 0 then
+  if self.num_children ~= 0 then
     self.num_children = self.num_children - 1
   end
   
@@ -66,3 +89,20 @@ function node:isTerminal()
     return false
   end
 end
+
+function deepcopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[deepcopy(orig_key)] = deepcopy(orig_value)
+        end
+        setmetatable(copy, deepcopy(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
+
+return node

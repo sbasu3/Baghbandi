@@ -2,9 +2,18 @@ require "Globals"
 --require "GameLogic"
 require "Board"
 require "Interact"
+require "negamax"
+--local socket = require "socket"
+
+--[[
+function sleep(sec)
+    socket.select(nil, nil, sec)
+end
+]]--
 
 --g = require "gamestate"
-local g = require('gamestate').create()
+g = require('gamestate').create()
+N = require('node').create(g,math.random())
 
 function love.load(arg)
   if arg[#arg] == "-debug" then require("mobdebug").start(); end
@@ -13,7 +22,11 @@ function love.load(arg)
 	idle = false
 	time = 0;
 	frame = 0;
+  turn = color;
   --GS = g.create()
+  --N = require('node').create(g,math.random());
+  print(N);
+
   mv = {};
   mv["src"] = nil
   mv["dst"] = nil
@@ -29,11 +42,54 @@ end
 
 
 function love.update(dt)
-	time = time + dt;
+--function love.run()	
+  --[[
+  time = time + dt;
 	if time > 60 then
 		exit = true;
 	end
-	--turn();
+ 
+  
+  if iteration == 1 then
+    N = require('node').create(g,math.random());
+    iteration = iteration + 1;
+    --print ("node created");
+  end
+  ]]--
+  N:set_value(negamax(N.data,4,-math.huge,math.huge,N.color));
+	
+  if turn == -1 then
+  
+    N:sort_children();
+    mv = N.children[1].mv;
+    N.data:update();
+    N = N.children[1];
+    turn = -turn;
+    iteration = iteration + 1;
+  else
+    --mv = {}
+ 
+    
+    
+    if mv == nil or mv.dst == nil then
+      --love.timer.sleep(0.2);
+      --print("no moves found");
+      return;
+    end
+    
+    local gs = N.data;
+    --print(gs);
+    
+    for i,v in pairs(gs) do
+      print(i,v);
+    end
+    
+    gs:update();
+    N = deepcopy(N.children[1]);
+    turn = -turn;
+  end
+  frame = frame + 1;
+  mv = {};
 	--GS = GameState(A);	
 	--print(GS[1],GS[2],GS[3],GS[4]);
 end
@@ -45,23 +101,27 @@ function love.draw()
   love.graphics.draw(board, myquad, 0, 0);
 	drawBoard(SIZE,BSIZE);
   love.graphics.reset();
+  frame = frame + 1;
+  local gs = N.data;
+  
 	for i=1,5 do
     for j = 1,5 do
-      if g.A[i][j] ~= nil then
-        if g.A[i][j] == 1 then
+      if gs.A[i][j] ~= nil then
+        if gs.A[i][j] == 1 then
           --love.graphics.setColor(254,100,46,255);
             love.graphics.draw(goat,gquad,GAP*(i-1),GAP*(j-1));
-        elseif g.A[i][j] == -1 then
+        elseif gs.A[i][j] == -1 then
           --love.graphics.setColor(154,46,254,255);	  
           love.graphics.draw(tiger,tquad,GAP*(i-1),GAP*(j-1));
         end
-        if g.A[i][j] ~= 0 then
+        if gs.A[i][j] ~= 0 then
           --love.graphics.circle("fill",BSIZE+GAP*((i-1)%5),BSIZE+GAP*math.floor((i-1)/5),10, 100);
         end
       end
     end
     
 	end
+  --mv = {};
 end
 
 function love.mousepressed( x , y , button , isTouch)

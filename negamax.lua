@@ -6,20 +6,22 @@
 --]
 
 require "moveUtils"
+require "node"
 --require "graph";
 
 function negamax(node,depth,alpha,beta,color)
-	if depth == 0 or is_Terminal(node) then
+	if depth == 0 or node:isTerminal() then
 		return color * Heuristic(node);	
 	end
 
 	bestval = -math.huge;
-	childnodes = GenerateMoves(node);
-	childnodes = OrderMoves(childnodes);
+	generateMoves(node);
+	node:sort_children();
 
-	for key,child in pairs(childnodes) do
+	for key,child in pairs(node.children) do
 		val = -negamax(child,depth -1, -beta, -alpha , -color);
 		bestval = math.max(bestval,val);
+    node:set_value(bestval);
 		alpha = math.max(alpha,val);
 		if alpha >= beta then
 			break;

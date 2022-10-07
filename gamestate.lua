@@ -1,5 +1,7 @@
 local GS = {}
 
+GS.__index = GS
+
 function GS.create()
   
   local g = {}
@@ -23,6 +25,7 @@ function GS.create()
 
   --remember last move
   g.mv = nil
+  g.postA = nil
   --remember whose turn is it now
   -- Goat is G or 1
   -- Tiger is T or -1
@@ -40,22 +43,38 @@ function GS.create()
 end
 
 
-function GS:update(mv)
-  	if mv.src then
-		self.A[mv.src.x][mv.src.y] = 0;
+function GS:update()
+  
+  local killed = false; 
+  -- copy the original state first
+  self.postA = {}
+  
+  for i =1,BOARDSIZE do
+    self.postA[i] = {}
+    for j =1,BOARDSIZE do
+      self.postA[i][j] = self.A[i][j]
+    end
+  end
+  
+  if mv.src then
+		--self.postA[mv.src.x][mv.src.y] = 0;
     local X1,Y1 = mv.src.x,mv.src.y;
     local X2,Y2 = mv.dst.x,mv.dst.y;
     local dist = math.sqrt((X1-X2)^2+(Y1-Y2)^2);
     
-    self.A[mv.src.x][mv.src.y] = 0
+    self.postA[mv.src.x][mv.src.y] = 0
   
     if dist == 2*math.sqrt(2) or dist == 2 then
       local middleX = (X1+X2)/2;
       local middleY = (Y1+Y2)/2;
-      self.A[middleX][middleY] = 0;
+      self.postA[middleX][middleY] = 0;
+      self.goatsDead = self.goatsDead + 1
+      killed = true;
     end
 	end
-	self.A[mv.dst.x][mv.dst.y] = mv.color;
+	self.postA[mv.dst.x][mv.dst.y] = mv.color;
+  
+  return killed;
 end
 
 function GS:isSpecial(x,y)
