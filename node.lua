@@ -1,25 +1,35 @@
-local node = {}
+require "gamestate"
+
+node = {}
 
 node.__index = node
 
-node.data = {}
+node.data = GS:new()
 
-node.data.__index = node.data
+--node.data.__index = node.data
 
-function node.create(data,id)
-  local n = {}
+--gs = require('gamestate').create()
+
+--function node.create(data,id)
+--local n = {}
+
+--setmetatable(n,node)
+
+--n.data = GS:new(data)
+--n.data = deepcopy(data)
+node.id = 0
+node.value = nil
+node.num_children = 0
+node.children = {}
+
+--return n
   
-  setmetatable(n,node)
-  
-  n.data = data
-  --n.data = deepcopy(data)
-  n.id = id
-  n.value = nil
-  n.num_children = 0
-  n.children = {}
-  
-  return n
-  
+--end
+function node:new (o)
+  o = o or {}   -- create object if user does not provide one
+  setmetatable(o, self)
+  self.__index = self
+  return o
 end
 
 function node:clone(id)
@@ -28,7 +38,7 @@ function node:clone(id)
   setmetatable(n,node)
   
   --n.data = self.data
-  n.data = deepcopy(self.data)
+  n.data = self.data
   n.id = id
   n.value = nil
   n.num_children = 0
@@ -90,19 +100,6 @@ function node:isTerminal()
   end
 end
 
-function deepcopy(orig)
-    local orig_type = type(orig)
-    local copy
-    if orig_type == 'table' then
-        copy = {}
-        for orig_key, orig_value in next, orig, nil do
-            copy[deepcopy(orig_key)] = deepcopy(orig_value)
-        end
-        setmetatable(copy, deepcopy(getmetatable(orig)))
-    else -- number, string, boolean, etc
-        copy = orig
-    end
-    return copy
-end
 
-return node
+
+--return node

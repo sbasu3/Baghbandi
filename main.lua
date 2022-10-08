@@ -10,10 +10,10 @@ function sleep(sec)
     socket.select(nil, nil, sec)
 end
 ]]--
+require "gamestate"
+require "node"
 
---g = require "gamestate"
-g = require('gamestate').create()
-N = require('node').create(g,math.random())
+
 
 function love.load(arg)
   if arg[#arg] == "-debug" then require("mobdebug").start(); end
@@ -23,6 +23,10 @@ function love.load(arg)
 	time = 0;
 	frame = 0;
   turn = color;
+  local g = GS:new()
+  --g = require('gamestate').create()
+  --N = require('node').create(g,math.random(1,1000))
+  N = node:clone(math.random(1,1000))
   --GS = g.create()
   --N = require('node').create(g,math.random());
   print(N);
@@ -56,7 +60,7 @@ function love.update(dt)
     --print ("node created");
   end
   ]]--
-  N:set_value(negamax(N.data,4,-math.huge,math.huge,N.color));
+  N:set_value(negamax(N,4,-math.huge,math.huge,N.color));
 	
   if turn == -1 then
   
@@ -85,7 +89,9 @@ function love.update(dt)
     end
     
     gs:update();
-    N = deepcopy(N.children[1]);
+    print(N);
+    N = N.children[1];
+    print(N);
     turn = -turn;
   end
   frame = frame + 1;
@@ -139,7 +145,7 @@ function love.mousepressed( x , y , button , isTouch)
 		local x,y = GetMin(NearList);
     
     if button == 1 then -- Versions prior to 0.10.0 use the MouseConstant 'l'
-      if mv.src == nil then
+      if mv.src == nil and color == -1 then
         mv.src = {}
         mv.src.x = x
         mv.src.y = y

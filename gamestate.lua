@@ -1,83 +1,89 @@
-local GS = {}
+GS = {}
 
-GS.__index = GS
+--GS.__index = GS
 
-function GS.create()
+
   
-  local g = {}
+--local g = {}
   
-  setmetatable(g,GS)
-  
-  --initialize game state
-  g.A = {}
-  
-  for i =1,BOARDSIZE do
-    g.A[i] = {}
-    for j =1,BOARDSIZE do
-      g.A[i][j] = 0
-    end
+--setmetatable(g,GS)
+
+--initialize game state
+GS.A = {}
+
+for i =1,BOARDSIZE do
+  GS.A[i] = {}
+  for j =1,BOARDSIZE do
+    GS.A[i][j] = 0
   end
-  --put tigers on corners
-  g.A[1][1] = -1
-  g.A[1][BOARDSIZE] = -1
-  g.A[BOARDSIZE][1] = -1
-  g.A[BOARDSIZE][BOARDSIZE] = -1
+end
+--put tigers on corners
+GS.A[1][1] = -1
+GS.A[1][BOARDSIZE] = -1
+GS.A[BOARDSIZE][1] = -1
+GS.A[BOARDSIZE][BOARDSIZE] = -1
 
-  --remember last move
-  g.mv = nil
-  g.postA = nil
-  --remember whose turn is it now
-  -- Goat is G or 1
-  -- Tiger is T or -1
-  -- Empty is 0
-  g.color = 1
-  g.goatsBoard = 0
-  g.goatsDead = 0
-  g.tigersBlocked = 0
-  
-  --remember moves
-  g.moves = 0
-  
-  return g
-  
+--remember last move
+GS.mv = nil
+GS.postA = nil
+--remember whose turn is it now
+-- Goat is G or 1
+-- Tiger is T or -1
+-- Empty is 0
+GS.color = 1
+GS.goatsBoard = 0
+GS.goatsDead = 0
+GS.tigersBlocked = 0
+
+--remember moves
+GS.moves = 0
+
+--return g
+
+
+
+function GS:new (o)
+  o = o or {}   -- create object if user does not provide one
+  setmetatable(o, self)
+  self.__index = self
+  return o
 end
 
-
-function GS:update()
+function GS.update(gs)
   
   local killed = false; 
   -- copy the original state first
-  self.postA = {}
+  gs.postA = {}
   
   for i =1,BOARDSIZE do
-    self.postA[i] = {}
+    gs.postA[i] = {}
     for j =1,BOARDSIZE do
-      self.postA[i][j] = self.A[i][j]
+      gs.postA[i][j] = self.A[i][j]
     end
   end
   
-  if mv.src then
+  if gs.mv.src then
 		--self.postA[mv.src.x][mv.src.y] = 0;
-    local X1,Y1 = mv.src.x,mv.src.y;
-    local X2,Y2 = mv.dst.x,mv.dst.y;
+    local X1,Y1 = gs.mv.src.x,gs.mv.src.y;
+    local X2,Y2 = gs.mv.dst.x,gs.mv.dst.y;
     local dist = math.sqrt((X1-X2)^2+(Y1-Y2)^2);
     
-    self.postA[mv.src.x][mv.src.y] = 0
+    gs.postA[gs.mv.src.x][gs.mv.src.y] = 0
   
     if dist == 2*math.sqrt(2) or dist == 2 then
       local middleX = (X1+X2)/2;
       local middleY = (Y1+Y2)/2;
-      self.postA[middleX][middleY] = 0;
-      self.goatsDead = self.goatsDead + 1
+      gs.postA[middleX][middleY] = 0;
+      gs.goatsDead = gs.goatsDead + 1
       killed = true;
     end
 	end
-	self.postA[mv.dst.x][mv.dst.y] = mv.color;
+	gs.postA[gs.mv.dst.x][gs.mv.dst.y] = gs.mv.color;
   
   return killed;
 end
 
-function GS:isSpecial(x,y)
+function GS.isSpecial(x,y)
 	if x == 2 or x == 4 then
 		if y == 2 or y == 4 then
 			return true;
@@ -116,7 +122,7 @@ function GS:Validate(mv)
 	if dist == 1 then
 		return true;
 	elseif dist == math.sqrt(2) then
-		return self:isSpecial(X1,Y1) or self:isSpecial(X2,Y2);
+		return gs.isSpecial(X1,Y1) or gs.isSpecial(X2,Y2);
 	elseif dist == 2*math.sqrt(2) or dist == 2 then
 		local middleX = (X1+X2)/2;
 		local middleY = (Y1+Y2)/2;
@@ -131,4 +137,4 @@ function GS:Validate(mv)
 	 	
 end
 
-return GS
+--return GS
