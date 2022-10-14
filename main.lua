@@ -2,7 +2,7 @@ require "Globals"
 --require "GameLogic"
 require "Board"
 require "Interact"
-require "negamax"
+
 --local socket = require "socket"
 
 --[[
@@ -10,8 +10,10 @@ function sleep(sec)
     socket.select(nil, nil, sec)
 end
 ]]--
-require "gamestate"
+--gs = require  "gamestate"
+
 require "node"
+require "negamax"
 
 
 
@@ -23,13 +25,18 @@ function love.load(arg)
 	time = 0;
 	frame = 0;
   turn = color;
-  local g = GS:new()
+  --local g = GS:new()
+  
+  --g = GS:makeCopy(g)
   --g = require('gamestate').create()
   --N = require('node').create(g,math.random(1,1000))
-  N = node:clone(math.random(1,1000))
+  --N = node:clone(math.random(1,1000))
+
+  N = node:new(nil)
+  
   --GS = g.create()
   --N = require('node').create(g,math.random());
-  print(N);
+  --print(N.data.A[1][1]);
 
   mv = {};
   mv["src"] = nil
@@ -60,13 +67,14 @@ function love.update(dt)
     --print ("node created");
   end
   ]]--
-  N:set_value(negamax(N,4,-math.huge,math.huge,N.color));
+  N:set_value(negamax(N,2,-math.huge,math.huge,N.color));
 	
   if turn == -1 then
   
-    N:sort_children();
+    --N:sort_children();
     mv = N.children[1].mv;
-    N.data:update();
+    mv.color = -1;
+    N:update();
     N = N.children[1];
     turn = -turn;
     iteration = iteration + 1;
@@ -81,20 +89,20 @@ function love.update(dt)
       return;
     end
     
-    local gs = N.data;
+    local gs = N;
     --print(gs);
     
     for i,v in pairs(gs) do
       print(i,v);
     end
-    
+    gs:addMove(mv);
     gs:update();
     print(N);
     N = N.children[1];
     print(N);
     turn = -turn;
   end
-  frame = frame + 1;
+  --frame = frame + 1;
   mv = {};
 	--GS = GameState(A);	
 	--print(GS[1],GS[2],GS[3],GS[4]);
@@ -108,19 +116,19 @@ function love.draw()
 	drawBoard(SIZE,BSIZE);
   love.graphics.reset();
   frame = frame + 1;
-  local gs = N.data;
+  --local gs = N;
   
 	for i=1,5 do
     for j = 1,5 do
-      if gs.A[i][j] ~= nil then
-        if gs.A[i][j] == 1 then
+      if N.A[i][j] ~= nil then
+        if N.A[i][j] == 1 then
           --love.graphics.setColor(254,100,46,255);
             love.graphics.draw(goat,gquad,GAP*(i-1),GAP*(j-1));
-        elseif gs.A[i][j] == -1 then
+        elseif N.A[i][j] == -1 then
           --love.graphics.setColor(154,46,254,255);	  
           love.graphics.draw(tiger,tquad,GAP*(i-1),GAP*(j-1));
         end
-        if gs.A[i][j] ~= 0 then
+        if N.A[i][j] ~= 0 then
           --love.graphics.circle("fill",BSIZE+GAP*((i-1)%5),BSIZE+GAP*math.floor((i-1)/5),10, 100);
         end
       end
@@ -133,6 +141,11 @@ end
 function love.mousepressed( x , y , button , isTouch)
 	local gap = (SIZE-BSIZE)/4;
 	local NearList = {};
+  
+  if turn == -1 then
+    return
+  end
+  
 
 	if button == 1 then
 		for i = 1,5 do
@@ -145,7 +158,7 @@ function love.mousepressed( x , y , button , isTouch)
 		local x,y = GetMin(NearList);
     
     if button == 1 then -- Versions prior to 0.10.0 use the MouseConstant 'l'
-      if mv.src == nil and color == -1 then
+      if mv.src == nil then
         mv.src = {}
         mv.src.x = x
         mv.src.y = y
@@ -154,8 +167,9 @@ function love.mousepressed( x , y , button , isTouch)
         mv.dst.x = x
         mv.dst.y = y
       end
-      
-   end
+  
+ end
+     mv.color = turn
 		print("Mouse clicked at",x,y);
 	end
 end

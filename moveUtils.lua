@@ -3,12 +3,12 @@ require "gamestate"
 
 function Heuristic(node,color)
   
-  local A = node.data.A
+  local A = node.A
   --check for game end condition
   --return huge val if game ends
   -- <1> goats eaten > 5
   -- <2> All tigers trapped
-  if node.data.goatsDead > 5 or node.data.tigersBlocked == 4 then
+  if node.goatsDead > 5 or node.tigersBlocked == 4 then
     return math.huge
   end
   
@@ -20,23 +20,25 @@ function Heuristic(node,color)
   --check if any goat eaten
   --return a negative value if goat
   --return positive otherwise
-  local goats,num_g = getGoatList(node.data.A)
-  local postGoats,num_post_goats = getGoatList(node.data.postA)
-  if  num_g > num_post_goats then
-    return -color * math.huge/(node.data.goatsDead + node.data.goatsBoard)
+  local goats,num_g = getGoatLoc(node.A)
+  --local postGoats,num_post_goats = getGoatLoc(node.postA)
+  if  num_g > 0 then
+    return -color * math.huge/(node.goatsDead)
+  else
+    return math.huge
     --can be optimised to just divided by node.data.goatsDead
   end
   
   
 end
 
-function generateMoves(node)
+function generateMoves(n)
 
-  local t,num_t = getTigerLoc(node.data.A)
-  local g,num_g = getGoatLoc(node.data.A)
+  local t,num_t = getTigerLoc(n.A)
+  local g,num_g = getGoatLoc(n.A)
   local idx = 1
   
-  if node.data.color == 1 then
+  if n.color == 1 then
     
     if num_g == 0 then
       for i = 1,BOARDSIZE do
@@ -46,11 +48,13 @@ function generateMoves(node)
           m.dst = {}
           m.dst.x = i
           m.dst.y = j
-          local game = GS:new(node.data)
+          m.color = n.color
+          local game = node:new(n.A)
+          --game = node.data:makeCopy(node.data)
           if game:validate(m) then
-            local n = node:clone(math.random(1,1000))
-            node:add_child(n)
-            n.children[n.num_children].mv = m
+            --local n = node:clone(math.random(1,1000))
+            n:add_child(game)
+            n.children[n.num_children]:addMove(m)
           end
         end
       end
@@ -74,7 +78,7 @@ function generateMoves(node)
         end
       end
     end
-  elseif node.data.color == -1 then
+  elseif node.color == -1 then
     for i = 1,num_t do
       local m = {}
       m.src = {}

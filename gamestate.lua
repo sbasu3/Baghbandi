@@ -1,89 +1,140 @@
-GS = {}
+local class = require 'middleclass'
+
+GS = class('GS')
 
 --GS.__index = GS
 
 
+function GS:initialize(t)  
+  --local g = {}
   
---local g = {}
-  
---setmetatable(g,GS)
+  --setmetatable(g,GS)
+  --g.__index = GS
 
 --initialize game state
-GS.A = {}
+  self.A = {}
 
-for i =1,BOARDSIZE do
-  GS.A[i] = {}
-  for j =1,BOARDSIZE do
-    GS.A[i][j] = 0
-  end
-end
---put tigers on corners
-GS.A[1][1] = -1
-GS.A[1][BOARDSIZE] = -1
-GS.A[BOARDSIZE][1] = -1
-GS.A[BOARDSIZE][BOARDSIZE] = -1
-
---remember last move
-GS.mv = nil
-GS.postA = nil
---remember whose turn is it now
--- Goat is G or 1
--- Tiger is T or -1
--- Empty is 0
-GS.color = 1
-GS.goatsBoard = 0
-GS.goatsDead = 0
-GS.tigersBlocked = 0
-
---remember moves
-GS.moves = 0
-
---return g
-
-
-
-function GS:new (o)
-  o = o or {}   -- create object if user does not provide one
-  setmetatable(o, self)
-  self.__index = self
-  return o
-end
-
-function GS.update(gs)
-  
-  local killed = false; 
-  -- copy the original state first
-  gs.postA = {}
-  
-  for i =1,BOARDSIZE do
-    gs.postA[i] = {}
-    for j =1,BOARDSIZE do
-      gs.postA[i][j] = self.A[i][j]
+  if t == nil then
+    for i =1,BOARDSIZE do
+      self.A[i] = {}
+      --print(g.A[i])
+      for j =1,BOARDSIZE do
+        self.A[i][j] = 0
+      end
+    end
+  --put tigers on corners
+    self.A[1][1] = -1
+    self.A[1][BOARDSIZE] = -1
+    self.A[BOARDSIZE][1] = -1
+    self.A[BOARDSIZE][BOARDSIZE] = -1
+  else
+    for i =1,BOARDSIZE do
+      self.A[i] = {}
+      --print(g.A[i])
+      for j =1,BOARDSIZE do
+        self.A[i][j] = t[i][j]
+      end
     end
   end
   
-  if gs.mv.src then
+
+  --remember last move
+  self.mv = nil
+  self.postA = nil
+  --remember whose turn is it now
+  -- Goat is G or 1
+  -- Tiger is T or -1
+  -- Empty is 0
+  self.color = 1
+  self.goatsBoard = 0
+  self.goatsDead = 0
+  self.tigersBlocked = 0
+
+  --remember moves
+  self.moves = 0
+
+  --return g
+end
+
+
+
+
+function GS:makeCopy()
+  local t = GS:new()
+  
+  
+  t.A = {}
+  
+  --setmetatable(t,GS)
+  --t.__index = GS
+
+  for i =1,BOARDSIZE do
+    t.A[i] = {}
+    for j =1,BOARDSIZE do
+      t.A[i][j] = self.A[i][j]
+    end
+  end
+
+  --remember last move
+  t.mv = nil
+  t.postA = nil
+  --remember whose turn is it now
+  -- Goat is G or 1
+  -- Tiger is T or -1
+  -- Empty is 0
+  t.color = self.color 
+  t.goatsBoard = self.goatsBoard
+  t.goatsDead = self.goatsDead
+  t.tigersBlocked = self.tigersBlocked
+
+  --remember moves
+  t.moves = self.moves
+
+
+  
+  return t
+end
+
+function GS:addMove(mv)
+  self.mv = mv
+end
+
+
+function GS:update()
+  
+  local killed = false; 
+  -- copy the original state first
+  self.postA = {}
+  
+  for i =1,BOARDSIZE do
+    self.postA[i] = {}
+    for j =1,BOARDSIZE do
+      self.postA[i][j] = self.A[i][j]
+    end
+  end
+  
+  if self.mv.src then
 		--self.postA[mv.src.x][mv.src.y] = 0;
-    local X1,Y1 = gs.mv.src.x,gs.mv.src.y;
-    local X2,Y2 = gs.mv.dst.x,gs.mv.dst.y;
+    local X1,Y1 = self.mv.src.x,self.mv.src.y;
+    local X2,Y2 = self.mv.dst.x,self.mv.dst.y;
     local dist = math.sqrt((X1-X2)^2+(Y1-Y2)^2);
     
-    gs.postA[gs.mv.src.x][gs.mv.src.y] = 0
+    self.postA[self.mv.src.x][self.mv.src.y] = 0
   
     if dist == 2*math.sqrt(2) or dist == 2 then
       local middleX = (X1+X2)/2;
       local middleY = (Y1+Y2)/2;
-      gs.postA[middleX][middleY] = 0;
-      gs.goatsDead = gs.goatsDead + 1
+      self.postA[middleX][middleY] = 0;
+      self.goatsDead = self.goatsDead + 1
       killed = true;
     end
 	end
-	gs.postA[gs.mv.dst.x][gs.mv.dst.y] = gs.mv.color;
+	self.postA[self.mv.dst.x][self.mv.dst.y] = self.mv.color;
   
   return killed;
 end
 
-function GS.isSpecial(x,y)
+function GS:isSpecial(x,y)
 	if x == 2 or x == 4 then
 		if y == 2 or y == 4 then
 			return true;
@@ -92,7 +143,7 @@ function GS.isSpecial(x,y)
 	return false;
 end
 
-function GS:Validate(mv)
+function GS:validate(mv)
   --check if move is there
 	if mv == nil then
 		return false;

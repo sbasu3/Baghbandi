@@ -1,44 +1,48 @@
+local class = require('middleclass')
 require "gamestate"
 
-node = {}
 
-node.__index = node
+node = class('node',GS)
 
-node.data = GS:new()
-
---node.data.__index = node.data
-
---gs = require('gamestate').create()
-
---function node.create(data,id)
---local n = {}
-
---setmetatable(n,node)
-
---n.data = GS:new(data)
---n.data = deepcopy(data)
-node.id = 0
-node.value = nil
-node.num_children = 0
-node.children = {}
-
---return n
+function node:initialize (t)
+  --local n = {}
   
---end
-function node:new (o)
-  o = o or {}   -- create object if user does not provide one
-  setmetatable(o, self)
-  self.__index = self
-  return o
+  --setmetatable(n,node)
+  --n.__index = node
+  GS:initialize(t)
+  --self.data = GS:new()
+  --n.data.__index = gs
+
+  --node.data = gs:makeCopy(GS)
+  --node.data.__index = node.data
+
+  --gs = require('gamestate').create()
+
+  --function node.create(data,id)
+  --local n = {}
+
+  --setmetatable(n,node)
+
+  --n.data = GS:new(data)
+  --n.data = deepcopy(data)
+  --self.color = 1
+  self.id = math.random(1,1000)
+  self.value = nil
+  self.num_children = 0
+  self.children = {}
+
+  --return n
+  
 end
 
+
 function node:clone(id)
-  local n = {}
+  --local n = {}
   
-  setmetatable(n,node)
-  
+  --setmetatable(n,node)
+   --n.__index = node
   --n.data = self.data
-  n.data = self.data
+  n.data = self.data:makeCopy(self.data)
   n.id = id
   n.value = nil
   n.num_children = 0
@@ -49,8 +53,9 @@ end
 
 
 function node:add_child(n)
-  
-  self.children[self.num_children] = n
+  --print(n.A)
+  table.insert(self.children,n)
+  --self.children[self.num_children] = n
   self.num_children = self.num_children + 1
   
 end
