@@ -32,7 +32,7 @@ function love.load(arg)
   --N = require('node').create(g,math.random(1,1000))
   --N = node:clone(math.random(1,1000))
 
-  N = node:new(nil)
+  N = node:new()
   
   --GS = g.create()
   --N = require('node').create(g,math.random());
@@ -67,11 +67,11 @@ function love.update(dt)
     --print ("node created");
   end
   ]]--
-  N:set_value(negamax(N,2,-math.huge,math.huge,N.color));
+  N:set_value(negamax(N,1,-math.huge,math.huge,N.color));
 	
   if turn == -1 then
   
-    --N:sort_children();
+    N:sort_children();
     mv = N.children[1].mv;
     mv.color = -1;
     N:update();
@@ -89,16 +89,13 @@ function love.update(dt)
       return;
     end
     
-    local gs = N;
-    --print(gs);
-    
-    for i,v in pairs(gs) do
-      print(i,v);
-    end
-    gs:addMove(mv);
-    gs:update();
+  
+    N:addMove(mv);
+    N:update();
     print(N);
+    assert( N.children[1] , "No children created ")
     N = N.children[1];
+  
     print(N);
     turn = -turn;
   end
@@ -158,7 +155,7 @@ function love.mousepressed( x , y , button , isTouch)
 		local x,y = GetMin(NearList);
     
     if button == 1 then -- Versions prior to 0.10.0 use the MouseConstant 'l'
-      if mv.src == nil then
+      if mv.src == nil and N.A[x][y] == 1 then
         mv.src = {}
         mv.src.x = x
         mv.src.y = y
@@ -168,7 +165,7 @@ function love.mousepressed( x , y , button , isTouch)
         mv.dst.y = y
       end
   
- end
+    end
      mv.color = turn
 		print("Mouse clicked at",x,y);
 	end

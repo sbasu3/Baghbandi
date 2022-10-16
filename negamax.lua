@@ -5,7 +5,7 @@
 --Date : 21 May 2014
 --]
 
-require "moveUtils"
+--require "moveUtils"
 require "node"
 --require "graph";
 
@@ -15,9 +15,10 @@ function negamax(n,depth,alpha,beta,color)
 	end
 
 	bestval = -math.huge;
-	generateMoves(n);
-	--n:sort_children();
-
+	n:generateMoves();
+	
+  n:sort_children();
+  
 	for key,child in pairs(n.children) do
 		val = -negamax(child,depth -1, -beta, -alpha , -color);
 		bestval = math.max(bestval,val);
@@ -27,6 +28,8 @@ function negamax(n,depth,alpha,beta,color)
 			break;
 		end
 	end
+  
 
-	return bestval;
+	
+  return bestval;
 end

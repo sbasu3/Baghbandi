@@ -12,6 +12,10 @@ function GS:initialize(t)
   --g.__index = GS
 
 --initialize game state
+  if self == nil then
+    assert( self == t , "object is modifying self")
+  end
+  
   self.A = {}
 
   if t == nil then
@@ -27,73 +31,49 @@ function GS:initialize(t)
     self.A[1][BOARDSIZE] = -1
     self.A[BOARDSIZE][1] = -1
     self.A[BOARDSIZE][BOARDSIZE] = -1
+      --remember last move
+    self.mv = nil
+    self.postA = nil
+    --remember whose turn is it now
+    -- Goat is G or 1
+    -- Tiger is T or -1
+    -- Empty is 0
+    self.color = 1
+    self.goatsBoard = 0
+    self.goatsDead = 0
+    self.tigersBlocked = 0
+
+    --remember moves
+    self.moves = 0
   else
     for i =1,BOARDSIZE do
       self.A[i] = {}
       --print(g.A[i])
       for j =1,BOARDSIZE do
-        self.A[i][j] = t[i][j]
+        self.A[i][j] = t.A[i][j]
       end
     end
+        --remember last move
+    self.mv = t.mv
+    self.postA = t.postA
+    --remember whose turn is it now
+    -- Goat is G or 1
+    -- Tiger is T or -1
+    -- Empty is 0
+    self.color = t.color
+    self.goatsBoard = t.goatsBoard
+    self.goatsDead = t.goatsDead
+    self.tigersBlocked = t.tigersBlocked
+
+    --remember moves
+    self.moves = t.moves
   end
-  
-
-  --remember last move
-  self.mv = nil
-  self.postA = nil
-  --remember whose turn is it now
-  -- Goat is G or 1
-  -- Tiger is T or -1
-  -- Empty is 0
-  self.color = 1
-  self.goatsBoard = 0
-  self.goatsDead = 0
-  self.tigersBlocked = 0
-
-  --remember moves
-  self.moves = 0
-
   --return g
 end
 
 
 
 
-function GS:makeCopy()
-  local t = GS:new()
-  
-  
-  t.A = {}
-  
-  --setmetatable(t,GS)
-  --t.__index = GS
-
-  for i =1,BOARDSIZE do
-    t.A[i] = {}
-    for j =1,BOARDSIZE do
-      t.A[i][j] = self.A[i][j]
-    end
-  end
-
-  --remember last move
-  t.mv = nil
-  t.postA = nil
-  --remember whose turn is it now
-  -- Goat is G or 1
-  -- Tiger is T or -1
-  -- Empty is 0
-  t.color = self.color 
-  t.goatsBoard = self.goatsBoard
-  t.goatsDead = self.goatsDead
-  t.tigersBlocked = self.tigersBlocked
-
-  --remember moves
-  t.moves = self.moves
-
-
-  
-  return t
-end
 
 function GS:addMove(mv)
   self.mv = mv

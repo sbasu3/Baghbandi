@@ -1,6 +1,6 @@
 local class = require('middleclass')
 require "gamestate"
-
+require "moveUtils"
 
 node = class('node',GS)
 
@@ -30,25 +30,45 @@ function node:initialize (t)
   self.value = nil
   self.num_children = 0
   self.children = {}
-
+  self.generated = false
   --return n
   
 end
 
+function node:setGameState(t)
+  --local t = node:new()
+  
+  for i =1,BOARDSIZE do
+    --self.A[i] = {}
+    --print(g.A[i])
+    for j =1,BOARDSIZE do
+      self.A[i][j] = t[i][j]
+    end
+  end
+end
 
-function node:clone(id)
-  --local n = {}
-  
-  --setmetatable(n,node)
-   --n.__index = node
-  --n.data = self.data
-  n.data = self.data:makeCopy(self.data)
-  n.id = id
-  n.value = nil
-  n.num_children = 0
-  n.children = {}
-  
-  return n
+function node:setVars(t)
+        --remember last move
+  self.mv = t.mv
+  self.postA = t.postA
+  --remember whose turn is it now
+  -- Goat is G or 1
+  -- Tiger is T or -1
+  -- Empty is 0
+  self.color = t.color
+  self.goatsBoard = t.goatsBoard
+  self.goatsDead = t.goatsDead
+  self.tigersBlocked = t.tigersBlocked
+
+  --remember moves
+  self.moves = t.moves
+  ---------------------------
+  self.id = math.random(1,1000)
+  self.value = nil
+  self.num_children = 0
+  self.children = {}
+  self.generated = false
+  --return t
 end
 
 
@@ -90,12 +110,10 @@ end
 
  function node:sort_children()
    
-   table.sort(self.children,function (k1, k2) return k1.value < k2.value end )
+   table.sort(self.children,function (k1, k2) return k1.id < k2.id end )
  end
  
-function node:get_data()
-  return self.data
-end
+
 
 function node:isTerminal()
   if self.children == 0 then
@@ -105,6 +123,83 @@ function node:isTerminal()
   end
 end
 
+function node:generateMoves()
+
+  if self.generated then
+    return
+  end
+  
+
+  local t,num_t = getTigerLoc(self.A)
+  local g,num_g = getGoatLoc(self.A)
+  local idx = 1
+  
+  if self.color == 1 then
+    
+    if num_g == 0 then
+      for i = 1,BOARDSIZE do
+        for j = 1,BOARDSIZE do
+          local m = {}
+          m.src = nil
+          m.dst = {}
+          m.dst.x = i
+          m.dst.y = j
+          m.color = self.color
+          local game = node:new()
+          game:setGameState(self.A)
+          game:setVars(self)
+          --game = node.data:makeCopy(node.data)
+          if game:validate(m) then
+            --local n = node:clone(math.random(1,1000))
+            self:add_child(game)
+            self.children[self.num_children]:addMove(m)
+          end
+        end
+      end
+    end
+    
+    for i = 1,num_g do
+      local m = {}
+      m.src = {}
+      m.src.x = g[idx]["x"]
+      m.src.y = g[idx]["y"]
+      for j = -1,1 do
+        for k = -1,1 do
+          m.dst = {}
+          m.dst.x = m.src.x + j
+          m.dst.y = m.src.y + k
+          local game = node:new(self)
+          if game:validate(m) then
+            local n = node:clone(math.random(1,1000))
+            self:add_child(n)
+            self.children[self.num_children].mv = m
+          end
+        end
+      end
+    end
+  elseif self.color == -1 then
+    for i = 1,num_t do
+      local m = {}
+      m.src = {}
+      m.src.x = t[idx]["x"]
+      m.src.y = t[idx]["y"]
+      for j = -2,2 do
+        for k = -2,2 do
+          m.dst = {}
+          m.dst.x = m.src.x + j
+          m.dst.y = m.src.y + k
+          local game = node:new(self)
+          if game:validate(m) then
+            local n = node:clone(math.random(1,1000))
+            self:add_child(n)
+            self.children[self.num_children].mv = m
+          end
+        end
+      end
+    end
+  end
+  self.generated = true
+end
 
 
 --return node
