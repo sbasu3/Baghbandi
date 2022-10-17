@@ -28,6 +28,8 @@ function GS:initialize(t)
     end
   --put tigers on corners
     self.A[1][1] = -1
+    --self.A[1][3] = -1
+    --self.A[1][5] = -1
     self.A[1][BOARDSIZE] = -1
     self.A[BOARDSIZE][1] = -1
     self.A[BOARDSIZE][BOARDSIZE] = -1
@@ -76,7 +78,18 @@ end
 
 
 function GS:addMove(mv)
-  self.mv = mv
+  self.mv = {}
+  self.mv.color = mv.color
+  
+  if mv.src ~= nil then
+    self.mv.src = {}
+    self.mv.src.x = mv.src.x
+    self.mv.src.y = mv.src.y
+  end
+  
+  self.mv.dst = {}
+  self.mv.dst.x = mv.dst.x
+  self.mv.dst.y = mv.dst.y
 end
 
 
@@ -128,6 +141,10 @@ function GS:validate(mv)
 	if mv == nil then
 		return false;
 	end
+  --check out of bounds
+  if mv.dst.x < 1 or mv.dst.x > 5 or mv.dst.y < 1 or mv.dst.y > 5 then
+    return false
+  end
   
   --check if new goat can be placed
 	if mv.src == nil then
@@ -153,7 +170,7 @@ function GS:validate(mv)
 	if dist == 1 then
 		return true;
 	elseif dist == math.sqrt(2) then
-		return gs.isSpecial(X1,Y1) or gs.isSpecial(X2,Y2);
+		return self:isSpecial(X1,Y1) or self:isSpecial(X2,Y2);
 	elseif dist == 2*math.sqrt(2) or dist == 2 then
 		local middleX = (X1+X2)/2;
 		local middleY = (Y1+Y2)/2;

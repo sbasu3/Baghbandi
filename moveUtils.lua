@@ -1,14 +1,14 @@
 --require "gamestate"
 
 
-function Heuristic(node,color)
+function Heuristic(n)
   
-  local A = node.A
+  local A = n.A
   --check for game end condition
   --return huge val if game ends
   -- <1> goats eaten > 5
   -- <2> All tigers trapped
-  if node.goatsDead > 5 or node.tigersBlocked == 4 then
+  if n.goatsDead > 5 or n.tigersBlocked == 4 then
     return math.huge
   end
   
@@ -20,10 +20,10 @@ function Heuristic(node,color)
   --check if any goat eaten
   --return a negative value if goat
   --return positive otherwise
-  local goats,num_g = getGoatLoc(node.A)
+  local goats,num_g = getGoatLoc(n.A)
   --local postGoats,num_post_goats = getGoatLoc(node.postA)
   if  num_g > 0 then
-    return -color * math.huge/(node.goatsDead)
+    return -n.color * math.huge/(n.goatsDead)
   else
     return math.huge
     --can be optimised to just divided by node.data.goatsDead
@@ -61,9 +61,9 @@ function getGoatLoc(a)
   for i = 1,BOARDSIZE do
     for j = 1,BOARDSIZE do
       if a[i][j] == 1 then
-        tiger_list[idx] = {}
-        tiger_list[idx]["x"] = i
-        tiger_list[idx]["y"] = j
+        goat_list[idx] = {}
+        goat_list[idx]["x"] = i
+        goat_list[idx]["y"] = j
         idx = idx + 1
       end
     end

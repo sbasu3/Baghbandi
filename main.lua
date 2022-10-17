@@ -67,17 +67,24 @@ function love.update(dt)
     --print ("node created");
   end
   ]]--
-  N:set_value(negamax(N,1,-math.huge,math.huge,N.color));
 	
   if turn == -1 then
   
+    N.color = -1
+    N:set_value(negamax(N,2,-math.huge,math.huge,N.color));
+
     N:sort_children();
+    assert( N.children[1] , "No children created ")
+
     mv = N.children[1].mv;
     mv.color = -1;
     N:update();
-    N = N.children[1];
+    local n = N.children[1];
+    N:delete_all_children();
+    N = n;
     turn = -turn;
     iteration = iteration + 1;
+    mv = {}
   else
     --mv = {}
  
@@ -89,18 +96,24 @@ function love.update(dt)
       return;
     end
     
-  
-    N:addMove(mv);
-    N:update();
-    print(N);
-    assert( N.children[1] , "No children created ")
-    N = N.children[1];
-  
-    print(N);
-    turn = -turn;
+    if N:validate(mv) then
+      N:addMove(mv);
+      N:update();
+      --print(N);
+      --assert( N.children[1] , "No children created ")
+      --N = N.children[1];
+    
+      --print(N);
+      N.A = N.postA;
+      turn = -turn;
+      mv = {};
+    else
+      return
+    end
+    
   end
   --frame = frame + 1;
-  mv = {};
+ 
 	--GS = GameState(A);	
 	--print(GS[1],GS[2],GS[3],GS[4]);
 end
@@ -142,14 +155,14 @@ function love.mousepressed( x , y , button , isTouch)
   if turn == -1 then
     return
   end
-  
+  --love.graphics.print("Click",x,y)
 
 	if button == 1 then
 		for i = 1,5 do
       NearList[i] = {}
 			for j =1,5 do
 				--NearList[ (i-1)*5 + j] = distance(x,y,BSIZE+gap*(j-1),BSIZE+gap*(i-1));
-        NearList[i][j] = distance(x,y,BSIZE+gap*(j-1),BSIZE+gap*(i-1));
+        NearList[i][j] = distance(x,y,BSIZE+gap*(i-1),BSIZE+gap*(j-1));
 			end
 		end
 		local x,y = GetMin(NearList);

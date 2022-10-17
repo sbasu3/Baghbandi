@@ -97,7 +97,7 @@ end
 function node:delete_all_children()
   
   for i = self.num_children,0,-1 do
-    self.children[i]:delete_all_children()
+    --self.children[i]:delete_all_children()
     table.remove(self.children)
   end
   self.num_children = 0
@@ -151,8 +151,12 @@ function node:generateMoves()
           --game = node.data:makeCopy(node.data)
           if game:validate(m) then
             --local n = node:clone(math.random(1,1000))
+            game:addMove(m)
+            game:update()
+            game.A = game.postA
+            game.color = -self.color
             self:add_child(game)
-            self.children[self.num_children]:addMove(m)
+            --self.children[self.num_children]:addMove(m)
           end
         end
       end
@@ -168,11 +172,20 @@ function node:generateMoves()
           m.dst = {}
           m.dst.x = m.src.x + j
           m.dst.y = m.src.y + k
-          local game = node:new(self)
+          m.color = self.color
+          local game = node:new()
+          game:setGameState(self.A)
+          game:setVars(self)
+          --game = node.data:makeCopy(node.data)
           if game:validate(m) then
-            local n = node:clone(math.random(1,1000))
-            self:add_child(n)
-            self.children[self.num_children].mv = m
+            --local n = node:clone(math.random(1,1000))
+            game:addMove(m)
+            game:update()
+            game.A = game.postA
+            game.color = -self.color
+
+            self:add_child(game)
+            --self.children[self.num_children]:addMove(m)
           end
         end
       end
@@ -188,11 +201,20 @@ function node:generateMoves()
           m.dst = {}
           m.dst.x = m.src.x + j
           m.dst.y = m.src.y + k
-          local game = node:new(self)
+          m.color = self.color
+          local game = node:new()
+          game:setGameState(self.A)
+          game:setVars(self)
+          --game = node.data:makeCopy(node.data)
           if game:validate(m) then
-            local n = node:clone(math.random(1,1000))
-            self:add_child(n)
-            self.children[self.num_children].mv = m
+            --local n = node:clone(math.random(1,1000))
+            game:addMove(m)
+            game:update()
+            game.A = game.postA
+            game.color = -self.color
+
+            self:add_child(game)
+            --self.children[self.num_children]:addMove(m)
           end
         end
       end
