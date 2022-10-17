@@ -33,7 +33,7 @@ function love.load(arg)
   --N = node:clone(math.random(1,1000))
 
   N = node:new()
-  
+
   --GS = g.create()
   --N = require('node').create(g,math.random());
   --print(N.data.A[1][1]);
@@ -41,6 +41,7 @@ function love.load(arg)
   mv = {};
   mv["src"] = nil
   mv["dst"] = nil
+  
 	--love.graphics.setMode(SIZE,SIZE,false,true,0);
 	love.window.setMode(SIZE,SIZE,{fullscreen = false,vsync = true,resizable = false, borderless = false,centered = false});
 	board = love.graphics.newImage("assets/images/back.png");
@@ -53,35 +54,24 @@ end
 
 
 function love.update(dt)
---function love.run()	
-  --[[
-  time = time + dt;
-	if time > 60 then
-		exit = true;
-	end
- 
+
+
+
   
-  if iteration == 1 then
-    N = require('node').create(g,math.random());
-    iteration = iteration + 1;
-    --print ("node created");
-  end
-  ]]--
-	
   if turn == -1 then
   
     N.color = -1
-    N:set_value(negamax(N,2,-math.huge,math.huge,N.color));
+    N:setValue(minimax(N,DEPTH,N.color))
 
     N:sort_children();
     assert( N.children[1] , "No children created ")
 
     mv = N.children[1].mv;
     mv.color = -1;
-    N:update();
-    local n = N.children[1];
-    N:delete_all_children();
-    N = n;
+    N:addMove(mv);
+    N:apply();
+    print("Goats Dead:",N.goatsDead)
+
     turn = -turn;
     iteration = iteration + 1;
     mv = {}
@@ -91,31 +81,29 @@ function love.update(dt)
     
     
     if mv == nil or mv.dst == nil then
-      --love.timer.sleep(0.2);
-      --print("no moves found");
       return;
     end
     
     if N:validate(mv) then
-      N:addMove(mv);
-      N:update();
-      --print(N);
+      N:setValue(minimax(N,DEPTH,1))  
+      N:addMove(mv)
+      N = N:getChildWithMove(mv);
+      --N:update();
+      assert(N ~= nil, "No child found")
+      print("Goats on Board:",N.goatsBoard)
       --assert( N.children[1] , "No children created ")
-      --N = N.children[1];
+
     
-      --print(N);
-      N.A = N.postA;
+      --N.A = N.postA;
       turn = -turn;
       mv = {};
+    
     else
       return
     end
     
   end
-  --frame = frame + 1;
- 
-	--GS = GameState(A);	
-	--print(GS[1],GS[2],GS[3],GS[4]);
+
 end
 
 

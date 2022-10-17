@@ -93,7 +93,7 @@ function GS:addMove(mv)
 end
 
 
-function GS:update()
+function GS:apply()
   
   local killed = false; 
   -- copy the original state first
@@ -118,11 +118,19 @@ function GS:update()
       local middleX = (X1+X2)/2;
       local middleY = (Y1+Y2)/2;
       self.postA[middleX][middleY] = 0;
-      self.goatsDead = self.goatsDead + 1
+      self.goatsDead = self.goatsDead + 1;
+      self.goatsBoard = self.goatsBoard - 1;
       killed = true;
     end
 	end
 	self.postA[self.mv.dst.x][self.mv.dst.y] = self.mv.color;
+  
+  if self.mv.color == 1 and mv.src == nil then
+    self.goatsBoard = self.goatsBoard + 1
+  end
+  
+  
+  self.A = self.postA
   
   return killed;
 end
@@ -133,12 +141,17 @@ function GS:isSpecial(x,y)
 			return true;
 		end
 	end
+  
+  if x == 3 and y == 3 then
+    return true
+  end
+  
 	return false;
 end
 
 function GS:validate(mv)
   --check if move is there
-	if mv == nil then
+	if mv == nil or mv.dst == nil then
 		return false;
 	end
   --check out of bounds
@@ -148,7 +161,7 @@ function GS:validate(mv)
   
   --check if new goat can be placed
 	if mv.src == nil then
-		if mv.color == 1 and (self.goatsBoard + self.goatsDead) < 20 and self.A[mv.dst.x][mv.dst.y] == 0 then
+		if mv.color == 1 and (self.goatsBoard + self.goatsDead) <= 20 and self.A[mv.dst.x][mv.dst.y] == 0 then
 			return true;
 		else
 			return false;

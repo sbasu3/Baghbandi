@@ -17,19 +17,55 @@ function negamax(n,depth,alpha,beta,color)
 	bestval = -math.huge;
 	n:generateMoves();
 	
-  n:sort_children();
+  --n:sort_children();
   
 	for key,child in pairs(n.children) do
 		val = -negamax(child,depth -1, -beta, -alpha , -color);
 		bestval = math.max(bestval,val);
-    --n:set_value(bestval);
+    child:set_value(val);
 		alpha = math.max(alpha,val);
 		if alpha >= beta then
 			break;
 		end
 	end
   
-
+  n:sort_children();
 	
   return bestval;
+end
+
+
+function  minimax( n, depth, color )
+    
+  if depth == 0 or n:isTerminal() then
+    return Heuristic(n)
+  end
+  
+  n:generateMoves()
+  
+  if color == 1 then
+        
+    bestval = -math.huge
+        
+    for key,child in pairs(n.children) do
+      val = minimax( child, (depth - 1), -color )
+      child:setValue(val)
+      bestval = math.max( val , bestval )
+    end
+        
+    return bestval
+      
+    
+  else 
+    bestval = math.huge
+        
+    for key,child in pairs(n.children) do
+      val = minimax( child, (depth - 1), -color )
+      child:setValue(val)
+      bestval = math.min( val, bestval )
+    end
+    
+    return bestval
+    
+  end
 end

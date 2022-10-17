@@ -6,3 +6,5 @@ color = 1
 SIZE = 640;
 BSIZE = 50;
 GAP = (SIZE-2*BSIZE)/4;
+
+DEPTH = 1;

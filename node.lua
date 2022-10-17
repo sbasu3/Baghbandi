@@ -103,16 +103,37 @@ function node:delete_all_children()
   self.num_children = 0
 end
 
-function node:set_value(val)
+function node:setValue(val)
   
   self.value = val
 end
 
  function node:sort_children()
    
-   table.sort(self.children,function (k1, k2) return k1.id < k2.id end )
+   table.sort(self.children,function (k1, k2) return k1.value < k2.value end )
  end
  
+function node:getChildWithMove()
+
+  assert(self.mv ~= nil, "Self move not there")
+  for key,child in pairs(self.children) do
+    assert(child.mv ~= nil , "child mv not there!")
+    if child.mv.src == nil then
+      if child.mv.dst.x == self.mv.dst.x and child.mv.dst.y == self.mv.dst.y then
+        return child
+      end
+    else
+      if self.mv.src == nil then
+        return nil
+      end
+      
+      if child.mv.dst.x == self.mv.dst.x and child.mv.dst.y == self.mv.dst.y and child.mv.src.x == self.mv.src.x and child.mv.src.y == self.mv.src.y then
+        return child
+      end
+    end
+  end
+  return nil
+end
 
 
 function node:isTerminal()
@@ -152,8 +173,8 @@ function node:generateMoves()
           if game:validate(m) then
             --local n = node:clone(math.random(1,1000))
             game:addMove(m)
-            game:update()
-            game.A = game.postA
+            game:apply()
+            --game.A = game.postA
             game.color = -self.color
             self:add_child(game)
             --self.children[self.num_children]:addMove(m)
@@ -180,8 +201,8 @@ function node:generateMoves()
           if game:validate(m) then
             --local n = node:clone(math.random(1,1000))
             game:addMove(m)
-            game:update()
-            game.A = game.postA
+            game:apply()
+            --game.A = game.postA
             game.color = -self.color
 
             self:add_child(game)
@@ -209,8 +230,8 @@ function node:generateMoves()
           if game:validate(m) then
             --local n = node:clone(math.random(1,1000))
             game:addMove(m)
-            game:update()
-            game.A = game.postA
+            game:apply()
+            --game.A = game.postA
             game.color = -self.color
 
             self:add_child(game)
