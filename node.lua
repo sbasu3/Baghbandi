@@ -96,7 +96,7 @@ end
 
 function node:delete_all_children()
   
-  for i = self.num_children,0,-1 do
+  for _ = self.num_children,0,-1 do
     --self.children[i]:delete_all_children()
     table.remove(self.children)
   end
@@ -110,24 +110,25 @@ end
 
  function node:sort_children()
    
-   table.sort(self.children,function (k1, k2) return k1.value < k2.value end )
+   table.sort(self.children,function (k1, k2) return k1.value > k2.value end )
  end
  
-function node:getChildWithMove()
+function node:getChildWithMove(mv)
 
-  assert(self.mv ~= nil, "Self move not there")
-  for key,child in pairs(self.children) do
-    assert(child.mv ~= nil , "child mv not there!")
-    if child.mv.src == nil then
-      if child.mv.dst.x == self.mv.dst.x and child.mv.dst.y == self.mv.dst.y then
+  assert(mv ~= nil, "move not there")
+  for _,child in pairs(self.children) do
+    assert(child.mv ~= nil or child.mv ~= {}, "child mv not there!")
+    if child.mv.src == nil and child.color == 1 then
+      if child.mv.dst.x == mv.dst.x and child.mv.dst.y == mv.dst.y then
         return child
       end
     else
-      if self.mv.src == nil then
+      --teh follwoing should not be triggered
+      if mv.src == nil then
         return nil
       end
       
-      if child.mv.dst.x == self.mv.dst.x and child.mv.dst.y == self.mv.dst.y and child.mv.src.x == self.mv.src.x and child.mv.src.y == self.mv.src.y then
+      if child.mv.dst.x == mv.dst.x and child.mv.dst.y == mv.dst.y and child.mv.src.x == mv.src.x and child.mv.src.y == mv.src.y then
         return child
       end
     end
@@ -155,9 +156,9 @@ function node:generateMoves()
   local g,num_g = getGoatLoc(self.A)
   local idx = 1
   
-  if self.color == 1 then
+  if self.color == -1 then
     
-    if num_g == 0 then
+    if num_g < (20 - self.goatsDead) then
       for i = 1,BOARDSIZE do
         for j = 1,BOARDSIZE do
           local m = {}
@@ -165,17 +166,19 @@ function node:generateMoves()
           m.dst = {}
           m.dst.x = i
           m.dst.y = j
-          m.color = self.color
+          m.color = -self.color
           local game = node:new()
           game:setGameState(self.A)
           game:setVars(self)
+          game.color = -self.color
           --game = node.data:makeCopy(node.data)
           if game:validate(m) then
             --local n = node:clone(math.random(1,1000))
+      
             game:addMove(m)
             game:apply()
             --game.A = game.postA
-            game.color = -self.color
+            
             self:add_child(game)
             --self.children[self.num_children]:addMove(m)
           end
@@ -183,7 +186,7 @@ function node:generateMoves()
       end
     end
     
-    for i = 1,num_g do
+    for _ = 1,num_g do
       local m = {}
       m.src = {}
       m.src.x = g[idx]["x"]
@@ -193,17 +196,18 @@ function node:generateMoves()
           m.dst = {}
           m.dst.x = m.src.x + j
           m.dst.y = m.src.y + k
-          m.color = self.color
+          m.color = -self.color
           local game = node:new()
           game:setGameState(self.A)
           game:setVars(self)
+          game.color = -self.color
           --game = node.data:makeCopy(node.data)
           if game:validate(m) then
-            --local n = node:clone(math.random(1,1000))
+            
             game:addMove(m)
             game:apply()
             --game.A = game.postA
-            game.color = -self.color
+            
 
             self:add_child(game)
             --self.children[self.num_children]:addMove(m)
@@ -211,33 +215,39 @@ function node:generateMoves()
         end
       end
     end
-  elseif self.color == -1 then
-    for i = 1,num_t do
+  elseif self.color == 1 then
+    for _ = 1,num_t do
       local m = {}
       m.src = {}
       m.src.x = t[idx]["x"]
       m.src.y = t[idx]["y"]
+      local blocked = true
       for j = -2,2 do
         for k = -2,2 do
           m.dst = {}
           m.dst.x = m.src.x + j
           m.dst.y = m.src.y + k
-          m.color = self.color
+          m.color = -self.color
           local game = node:new()
           game:setGameState(self.A)
           game:setVars(self)
+          game.color = -self.color
           --game = node.data:makeCopy(node.data)
           if game:validate(m) then
-            --local n = node:clone(math.random(1,1000))
+            
             game:addMove(m)
             game:apply()
             --game.A = game.postA
-            game.color = -self.color
-
+            --game.color = -self.color
+            blocked = false
             self:add_child(game)
             --self.children[self.num_children]:addMove(m)
           end
         end
+        if blocked then
+          self.tigerBlocked = self.tigersBlocked + 1
+        end
+        
       end
     end
   end

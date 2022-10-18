@@ -16,6 +16,9 @@ function Heuristic(n)
   --check if any tiger trapped
   --return a positive value if goat
   --negative otherwise
+  if n.tigersBlocked > 0 then
+    return n.color * ( math.huge/4)
+  end
   
   --check if any goat eaten
   --return a negative value if goat

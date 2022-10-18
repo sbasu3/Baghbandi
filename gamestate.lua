@@ -40,7 +40,7 @@ function GS:initialize(t)
     -- Goat is G or 1
     -- Tiger is T or -1
     -- Empty is 0
-    self.color = 1
+    self.color = -1
     self.goatsBoard = 0
     self.goatsDead = 0
     self.tigersBlocked = 0
@@ -62,7 +62,7 @@ function GS:initialize(t)
     -- Goat is G or 1
     -- Tiger is T or -1
     -- Empty is 0
-    self.color = t.color
+    self.color = -t.color
     self.goatsBoard = t.goatsBoard
     self.goatsDead = t.goatsDead
     self.tigersBlocked = t.tigersBlocked
@@ -80,7 +80,7 @@ end
 function GS:addMove(mv)
   self.mv = {}
   self.mv.color = mv.color
-  
+  --assert( self.color == mv.color, " Some problem with color")
   if mv.src ~= nil then
     self.mv.src = {}
     self.mv.src.x = mv.src.x
@@ -158,10 +158,11 @@ function GS:validate(mv)
   if mv.dst.x < 1 or mv.dst.x > 5 or mv.dst.y < 1 or mv.dst.y > 5 then
     return false
   end
-  
+  --check mv color matches self
+  --assert( self.color == mv.color , " Problem with color setting")
   --check if new goat can be placed
 	if mv.src == nil then
-		if mv.color == 1 and (self.goatsBoard + self.goatsDead) <= 20 and self.A[mv.dst.x][mv.dst.y] == 0 then
+		if mv.color == 1 and (self.goatsBoard + self.goatsDead) < 20 and self.A[mv.dst.x][mv.dst.y] == 0 then
 			return true;
 		else
 			return false;

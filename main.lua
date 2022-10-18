@@ -55,48 +55,58 @@ end
 
 function love.update(dt)
 
-
-
+  if N.goatsDead > 5 then
+    love.graphics.print("Tigers Win",10,10)
+    return
+  elseif N.TigersBlocked == 4 then
+    love.graphics.print("Goats Win",10,10)
+    return
+  end
   
   if turn == -1 then
   
-    N.color = -1
-    N:setValue(minimax(N,DEPTH,N.color))
+    --N.color = -1
+    N:setValue(minimax(N,DEPTH,-1))
 
     N:sort_children();
     assert( N.children[1] , "No children created ")
 
     mv = N.children[1].mv;
-    mv.color = -1;
-    N:addMove(mv);
-    N:apply();
+    --mv.color = -1;
+    --N:addMove(mv);
+    --N:apply();
+    N = N:getChildWithMove(mv);
     print("Goats Dead:",N.goatsDead)
 
     turn = -turn;
     iteration = iteration + 1;
-    mv = {}
+    mv = nil
+    state = 0
   else
     --mv = {}
  
     
     
-    if mv == nil or mv.dst == nil then
+    if mv == nil or mv.dst == nil or state ~= 2 then
       return;
     end
     
     if N:validate(mv) then
       N:setValue(minimax(N,DEPTH,1))  
-      N:addMove(mv)
+      --N:addMove(mv)
       N = N:getChildWithMove(mv);
       --N:update();
       assert(N ~= nil, "No child found")
       print("Goats on Board:",N.goatsBoard)
+      print("Tigers Blocked:", N.tigersBlocked)
       --assert( N.children[1] , "No children created ")
 
     
       --N.A = N.postA;
       turn = -turn;
-      mv = {};
+      iteration = iteration + 1;
+      mv = nil
+      state = 0
     
     else
       return
@@ -133,13 +143,20 @@ function love.draw()
     end
     
 	end
+    if N.goatsDead > 5 then
+    love.graphics.print("Tigers Win",10,10)
+    return
+  elseif N.TigersBlocked == 4 then
+    love.graphics.print("Goats Win",10,10)
+    return
+  end
   --mv = {};
 end
 
 function love.mousepressed( x , y , button , isTouch)
 	local gap = (SIZE-BSIZE)/4;
 	local NearList = {};
-  
+  state = 0
   if turn == -1 then
     return
   end
@@ -155,19 +172,30 @@ function love.mousepressed( x , y , button , isTouch)
 		end
 		local x,y = GetMin(NearList);
     
-    if button == 1 then -- Versions prior to 0.10.0 use the MouseConstant 'l'
-      if mv.src == nil and N.A[x][y] == 1 then
+    if state == 0 then -- Versions prior to 0.10.0 use the MouseConstant 'l'
+      mv = {}
+      if N.A[x][y] == 1 then
         mv.src = {}
         mv.src.x = x
         mv.src.y = y
+        state = 1
       else
         mv.dst = {}
         mv.dst.x = x
         mv.dst.y = y
+        state = 2
       end
-  
+      
+    elseif state == 1 then
+      mv.dst = {}
+      mv.dst.x = x
+      mv.dst.y = y
+      state = 2
     end
-     mv.color = turn
-		print("Mouse clicked at",x,y);
-	end
+    mv.color = turn
+    print("Mouse clicked at",x,y);
+  end
+  
+
 end
+
