@@ -22,7 +22,7 @@ function negamax(n,depth,alpha,beta,color)
 	for key,child in pairs(n.children) do
 		val = -negamax(child,depth -1, -beta, -alpha , -color);
 		bestval = math.max(bestval,val);
-    child:set_value(val);
+    child:setValue(val);
 		alpha = math.max(alpha,val);
 		if alpha >= beta then
 			break;

@@ -20,11 +20,12 @@ require "negamax"
 function love.load(arg)
   if arg[#arg] == "-debug" then require("mobdebug").start(); end
 	iteration = 1
-	max = 4
-	idle = false
+	--max = 4
+	--idle = false
 	time = 0;
 	frame = 0;
   turn = color;
+  state = 0
   --local g = GS:new()
   
   --g = GS:makeCopy(g)
@@ -56,20 +57,26 @@ end
 function love.update(dt)
 
   if N.goatsDead > 5 then
-    love.graphics.print("Tigers Win",10,10)
+    love.graphics.print("Tigers Win",320,320)
     return
-  elseif N.TigersBlocked == 4 then
-    love.graphics.print("Goats Win",10,10)
+  elseif N.tigersBlocked == 4 then
+    love.graphics.print("Goats Win",320,320)
     return
   end
-  
+  time = time + dt
   if turn == -1 then
   
     --N.color = -1
     N:setValue(minimax(N,DEPTH,-1))
+    --N:setValue(negamax(N,DEPTH,math.huge,-math.huge,-1))
 
     N:sort_children();
-    assert( N.children[1] , "No children created ")
+    if N.num_children == 0 then
+      love.graphics.print("Goats Win",10,10)
+      return
+    end
+      
+    assert( N.num_children > 0 , "No children created ")
 
     mv = N.children[1].mv;
     --mv.color = -1;
@@ -87,12 +94,14 @@ function love.update(dt)
  
     
     
-    if mv == nil or mv.dst == nil or state ~= 2 then
+    if state ~= 2 then
       return;
     end
     
     if N:validate(mv) then
       N:setValue(minimax(N,DEPTH,1))  
+      --N:setValue(negamax(N,DEPTH,math.huge,-math.huge,1))
+
       --N:addMove(mv)
       N = N:getChildWithMove(mv);
       --N:update();
@@ -125,7 +134,8 @@ function love.draw()
   love.graphics.reset();
   frame = frame + 1;
   --local gs = N;
-  
+  love.graphics.print(tostring(time),200,10)
+  love.graphics.print("framerate"..tostring(frame/time),400,10)
 	for i=1,5 do
     for j = 1,5 do
       if N.A[i][j] ~= nil then
@@ -156,7 +166,7 @@ end
 function love.mousepressed( x , y , button , isTouch)
 	local gap = (SIZE-BSIZE)/4;
 	local NearList = {};
-  state = 0
+
   if turn == -1 then
     return
   end

@@ -185,7 +185,7 @@ function GS:validate(mv)
 		return true;
 	elseif dist == math.sqrt(2) then
 		return self:isSpecial(X1,Y1) or self:isSpecial(X2,Y2);
-	elseif dist == 2*math.sqrt(2) or dist == 2 then
+	elseif (dist == 2*math.sqrt(2) or dist == 2) and (self:isSpecial(X1,Y1) or self:isSpecial(X2,Y2)) then
 		local middleX = (X1+X2)/2;
 		local middleY = (Y1+Y2)/2;
 		if self.A[middleX][middleY] ~= 1 or mv.color ~= -1 then

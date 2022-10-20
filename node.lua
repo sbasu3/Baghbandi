@@ -110,7 +110,7 @@ end
 
  function node:sort_children()
    
-   table.sort(self.children,function (k1, k2) return k1.value > k2.value end )
+   table.sort(self.children,function (k1, k2) return k1.value*k1.color > k2.value*k2.color end )
  end
  
 function node:getChildWithMove(mv)
@@ -154,7 +154,7 @@ function node:generateMoves()
 
   local t,num_t = getTigerLoc(self.A)
   local g,num_g = getGoatLoc(self.A)
-  local idx = 1
+  --local idx = 1
   
   if self.color == -1 then
     
@@ -186,7 +186,7 @@ function node:generateMoves()
       end
     end
     
-    for _ = 1,num_g do
+    for idx = 1,num_g do
       local m = {}
       m.src = {}
       m.src.x = g[idx]["x"]
@@ -216,7 +216,7 @@ function node:generateMoves()
       end
     end
   elseif self.color == 1 then
-    for _ = 1,num_t do
+    for idx = 1,num_t do
       local m = {}
       m.src = {}
       m.src.x = t[idx]["x"]
