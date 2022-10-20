@@ -7,4 +7,6 @@ SIZE = 640;
 BSIZE = 50;
 GAP = (SIZE-2*BSIZE)/4;
 
-DEPTH = 3;
+DEPTH = 1;
+
+AI = 1;

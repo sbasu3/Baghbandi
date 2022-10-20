@@ -108,10 +108,15 @@ function node:setValue(val)
   self.value = val
 end
 
- function node:sort_children()
+ function node:sort_children(color)
    
-   table.sort(self.children,function (k1, k2) return k1.value*k1.color > k2.value*k2.color end )
- end
+  if color == 1 then
+    table.sort(self.children,function (k1, k2) return k1.value > k2.value end )
+  else
+    table.sort(self.children,function (k1, k2) return k1.value < k2.value end )
+  end
+  
+end
  
 function node:getChildWithMove(mv)
 
@@ -155,7 +160,7 @@ function node:generateMoves()
   local t,num_t = getTigerLoc(self.A)
   local g,num_g = getGoatLoc(self.A)
   --local idx = 1
-  
+  assert(num_g == self.goatsBoard, "Goats on Board Mismatch")
   if self.color == -1 then
     
     if num_g < (20 - self.goatsDead) then
@@ -221,6 +226,7 @@ function node:generateMoves()
       m.src = {}
       m.src.x = t[idx]["x"]
       m.src.y = t[idx]["y"]
+      self.tigersBlocked = 0
       local blocked = true
       for j = -2,2 do
         for k = -2,2 do
@@ -244,13 +250,16 @@ function node:generateMoves()
             --self.children[self.num_children]:addMove(m)
           end
         end
-        if blocked then
-          self.tigerBlocked = self.tigersBlocked + 1
-        end
-        
+      end
+      if blocked then
+        self.tigersBlocked = self.tigersBlocked + 1
       end
     end
   end
+  if self.tigersBlocked == 4 then
+    self.endgame = true
+  end
+  
   self.generated = true
 end
 

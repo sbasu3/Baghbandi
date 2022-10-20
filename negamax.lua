@@ -17,7 +17,7 @@ function negamax(n,depth,alpha,beta,color)
 	bestval = -math.huge;
 	n:generateMoves();
 	
-  --n:sort_children();
+  n:sort_children(n.color);
   
 	for key,child in pairs(n.children) do
 		val = -negamax(child,depth -1, -beta, -alpha , -color);
@@ -42,6 +42,7 @@ function  minimax( n, depth, color )
   end
   
   n:generateMoves()
+  --n:sort_children(n.color)
   
   if color == 1 then
         

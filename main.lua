@@ -1,16 +1,6 @@
 require "Globals"
---require "GameLogic"
 require "Board"
 require "Interact"
-
---local socket = require "socket"
-
---[[
-function sleep(sec)
-    socket.select(nil, nil, sec)
-end
-]]--
---gs = require  "gamestate"
 
 require "node"
 require "negamax"
@@ -56,33 +46,36 @@ end
 
 function love.update(dt)
 
-  if N.goatsDead > 5 then
-    love.graphics.print("Tigers Win",320,320)
-    return
-  elseif N.tigersBlocked == 4 then
-    love.graphics.print("Goats Win",320,320)
-    return
-  end
   time = time + dt
   if turn == -1 then
   
-    --N.color = -1
-    N:setValue(minimax(N,DEPTH,-1))
-    --N:setValue(negamax(N,DEPTH,math.huge,-math.huge,-1))
+    if AI == -1 then
+      N:setValue(minimax(N,DEPTH,-1))
+   
+      if N.endgame == true then
+        return
+      end
+    
+      N:sort_children(N.color);
 
-    N:sort_children();
-    if N.num_children == 0 then
-      love.graphics.print("Goats Win",10,10)
-      return
-    end
+        
+      assert( N.num_children > 0 , "No children created ")
+
+      mv = N.children[1].mv;
+
+      N = N:getChildWithMove(mv);
+    else
+        if state ~= 2 then
+          return;
+        end
+    
+        if N:validate(mv) then
+          N:setValue(minimax(N,DEPTH,1))  
+          N = N:getChildWithMove(mv);
+        end
+      end
       
-    assert( N.num_children > 0 , "No children created ")
 
-    mv = N.children[1].mv;
-    --mv.color = -1;
-    --N:addMove(mv);
-    --N:apply();
-    N = N:getChildWithMove(mv);
     print("Goats Dead:",N.goatsDead)
 
     turn = -turn;
@@ -90,36 +83,49 @@ function love.update(dt)
     mv = nil
     state = 0
   else
-    --mv = {}
- 
-    
-    
-    if state ~= 2 then
-      return;
-    end
-    
-    if N:validate(mv) then
-      N:setValue(minimax(N,DEPTH,1))  
-      --N:setValue(negamax(N,DEPTH,math.huge,-math.huge,1))
+    if AI == -1 then
+      if state ~= 2 then
+        return;
+      end
+      
+      if N:validate(mv) then
+        N:setValue(minimax(N,DEPTH,1))  
+        --N:setValue(negamax(N,DEPTH,math.huge,-math.huge,1))
 
-      --N:addMove(mv)
-      N = N:getChildWithMove(mv);
-      --N:update();
-      assert(N ~= nil, "No child found")
-      print("Goats on Board:",N.goatsBoard)
-      print("Tigers Blocked:", N.tigersBlocked)
-      --assert( N.children[1] , "No children created ")
-
-    
-      --N.A = N.postA;
-      turn = -turn;
-      iteration = iteration + 1;
-      mv = nil
-      state = 0
-    
+        --N:addMove(mv)
+        N = N:getChildWithMove(mv);
+        --N:update();
+      end
+      
     else
-      return
+      N:setValue(minimax(N,DEPTH,-1))
+   
+      if N.endgame == true then
+        return
+      end
+    
+      N:sort_children(N.color);
+
+        
+      assert( N.num_children > 0 , "No children created ")
+
+      mv = N.children[1].mv;
+
+      N = N:getChildWithMove(mv);
     end
+      
+    assert(N ~= nil, "No child found")
+    print("Goats on Board:",N.goatsBoard)
+    print("Tigers Blocked:", N.tigersBlocked)
+    --assert( N.children[1] , "No children created ")
+
+  
+    --N.A = N.postA;
+    turn = -turn;
+    iteration = iteration + 1;
+    mv = nil
+    state = 0
+ 
     
   end
 
@@ -133,7 +139,7 @@ function love.draw()
 	drawBoard(SIZE,BSIZE);
   love.graphics.reset();
   frame = frame + 1;
-  --local gs = N;
+
   love.graphics.print(tostring(time),200,10)
   love.graphics.print("framerate"..tostring(frame/time),400,10)
 	for i=1,5 do
@@ -143,11 +149,9 @@ function love.draw()
           --love.graphics.setColor(254,100,46,255);
             love.graphics.draw(goat,gquad,GAP*(i-1),GAP*(j-1));
         elseif N.A[i][j] == -1 then
-          --love.graphics.setColor(154,46,254,255);	  
           love.graphics.draw(tiger,tquad,GAP*(i-1),GAP*(j-1));
         end
         if N.A[i][j] ~= 0 then
-          --love.graphics.circle("fill",BSIZE+GAP*((i-1)%5),BSIZE+GAP*math.floor((i-1)/5),10, 100);
         end
       end
     end
@@ -156,7 +160,7 @@ function love.draw()
     if N.goatsDead > 5 then
     love.graphics.print("Tigers Win",10,10)
     return
-  elseif N.TigersBlocked == 4 then
+  elseif N.endgame then
     love.graphics.print("Goats Win",10,10)
     return
   end
@@ -167,7 +171,7 @@ function love.mousepressed( x , y , button , isTouch)
 	local gap = (SIZE-BSIZE)/4;
 	local NearList = {};
 
-  if turn == -1 then
+  if turn == AI then
     return
   end
   --love.graphics.print("Click",x,y)
@@ -184,7 +188,7 @@ function love.mousepressed( x , y , button , isTouch)
     
     if state == 0 then -- Versions prior to 0.10.0 use the MouseConstant 'l'
       mv = {}
-      if N.A[x][y] == 1 then
+      if N.A[x][y] == 1 or N.A[x][y] == -1 then
         mv.src = {}
         mv.src.x = x
         mv.src.y = y

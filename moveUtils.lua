@@ -4,7 +4,7 @@
 function Heuristic(n)
   -- retuns positive value for goat
   -- negative value for tiger
-  local A = n.A
+  
   --check for game end condition
   --return huge val if game ends
   -- <1> goats eaten > 5
@@ -24,15 +24,16 @@ function Heuristic(n)
   end
   
   --check if any goat eaten
-  --return a negative value if goat
-  --return positive otherwise
-  local goats,num_g = getGoatLoc(n.A)
-  --local postGoats,num_post_goats = getGoatLoc(node.postA)
-  if  n.goatsDead > 0 then
-    return n.color * (math.huge/20) * n.goatsDead
+  --return a small positive value if goat
+  --return large negative otherwise
+
+
+  if  n.goatsDead > 0 and n.color == 1 then
+    return -(math.huge/20) * n.goatsDead
+  elseif n.goatsDead > 0 and n.color == -1 then
+    return -math.huge
   else
     return math.huge
-    --can be optimised to just divided by node.data.goatsDead
   end
   
   
