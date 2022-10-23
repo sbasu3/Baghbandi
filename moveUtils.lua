@@ -81,7 +81,47 @@ function getGoatLoc(a)
 end
 
  
+function aiMove()
+  
+  assert(turn == -N.color, "some problem with turn")
+  N:setValue(minimax(N,DEPTH,-N.color))
+   
+  if N.endgame == true then
+    return
+  end
 
+  N:sort_children(N.color);
+
+    
+  assert( N.num_children > 0 , "No children created ")
+
+  mv = N.children[1].mv;
+
+  N = N:getChildWithMove(mv);
+  
+  turn = -turn;
+  iteration = iteration + 1;
+  mv = nil
+  state = 0
+end
+
+function playerMove()
+  if state ~= 2 then
+    return;
+  end
+    
+  if N:validate(mv) then
+    N:setValue(minimax(N,DEPTH,-N.color))  
+    N = N:getChildWithMove(mv);
+ 
+  
+    turn = -turn;
+    iteration = iteration + 1;
+    mv = nil
+    state = 0
+  end
+end
+  
 
 
 

@@ -5,6 +5,11 @@ require "Interact"
 require "node"
 require "negamax"
 
+socket = require("socket")
+
+function sleep(sec)
+    socket.sleep(sec)
+end
 
 
 function love.load(arg)
@@ -14,27 +19,34 @@ function love.load(arg)
 	--idle = false
 	time = 0;
 	frame = 0;
-  turn = color;
-  state = 0
-  --local g = GS:new()
   
-  --g = GS:makeCopy(g)
-  --g = require('gamestate').create()
-  --N = require('node').create(g,math.random(1,1000))
-  --N = node:clone(math.random(1,1000))
+  --whose turn is it
+  turn = 1;
+  
+  --mouse state
+  state = 0
 
   N = node:new()
-
-  --GS = g.create()
-  --N = require('node').create(g,math.random());
-  --print(N.data.A[1][1]);
 
   mv = {};
   mv["src"] = nil
   mv["dst"] = nil
   
 	--love.graphics.setMode(SIZE,SIZE,false,true,0);
-	love.window.setMode(SIZE,SIZE,{fullscreen = false,vsync = true,resizable = false, borderless = false,centered = false});
+	love.window.setMode(SIZE + 5*BSIZE,SIZE,{fullscreen = false,vsync = true,resizable = false, borderless = false,centered = false});
+  love.window.setTitle("Baghbandi");
+  
+  font_20 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",20);
+  font_32 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",32);
+
+  timeText = love.graphics.newText(font_20, {{1, 1, 0},""})
+  FPSText = love.graphics.newText(font_20, {{1, 1, 0},""})
+  turnText = love.graphics.newText(font_32, {{1, 1, 0},""})
+  goatsText = love.graphics.newText(font_32 ,{{1,1,0},""})
+  tigersText = love.graphics.newText(font_32 ,{{1,1,0},""})
+  goatsDeadText = love.graphics.newText(font_32 ,{{1,1,0},""})
+  
+  
 	board = love.graphics.newImage("assets/images/back.png");
 	goat = love.graphics.newImage("assets/images/goat.png");
 	tiger = love.graphics.newImage("assets/images/tiger.png");
@@ -47,87 +59,22 @@ end
 function love.update(dt)
 
   time = time + dt
-  if turn == -1 then
+
   
-    if AI == -1 then
-      N:setValue(minimax(N,DEPTH,-1))
-   
-      if N.endgame == true then
-        return
-      end
-    
-      N:sort_children(N.color);
-
-        
-      assert( N.num_children > 0 , "No children created ")
-
-      mv = N.children[1].mv;
-
-      N = N:getChildWithMove(mv);
-    else
-        if state ~= 2 then
-          return;
-        end
-    
-        if N:validate(mv) then
-          N:setValue(minimax(N,DEPTH,1))  
-          N = N:getChildWithMove(mv);
-        end
-      end
-      
-
-    print("Goats Dead:",N.goatsDead)
-
-    turn = -turn;
-    iteration = iteration + 1;
-    mv = nil
-    state = 0
+  if AI == turn then
+    sleep(1)
+    aiMove()
   else
-    if AI == -1 then
-      if state ~= 2 then
-        return;
-      end
-      
-      if N:validate(mv) then
-        N:setValue(minimax(N,DEPTH,1))  
-        --N:setValue(negamax(N,DEPTH,math.huge,-math.huge,1))
+    playerMove()
+  end
 
-        --N:addMove(mv)
-        N = N:getChildWithMove(mv);
-        --N:update();
-      end
-      
-    else
-      N:setValue(minimax(N,DEPTH,-1))
-   
-      if N.endgame == true then
-        return
-      end
-    
-      N:sort_children(N.color);
-
-        
-      assert( N.num_children > 0 , "No children created ")
-
-      mv = N.children[1].mv;
-
-      N = N:getChildWithMove(mv);
-    end
-      
+  if AI == turn then
     assert(N ~= nil, "No child found")
     print("Goats on Board:",N.goatsBoard)
     print("Tigers Blocked:", N.tigersBlocked)
-    --assert( N.children[1] , "No children created ")
-
-  
-    --N.A = N.postA;
-    turn = -turn;
-    iteration = iteration + 1;
-    mv = nil
-    state = 0
- 
-    
+    print("Goats Dead:",N.goatsDead)
   end
+
 
 end
 
@@ -139,9 +86,49 @@ function love.draw()
 	drawBoard(SIZE,BSIZE);
   love.graphics.reset();
   frame = frame + 1;
-
-  love.graphics.print(tostring(time),200,10)
-  love.graphics.print("framerate"..tostring(frame/time),400,10)
+  
+  timeText:clear()
+  FPSText:clear()
+  turnText:clear()
+  goatsText:clear()
+  tigersText:clear()
+  goatsDeadText:clear()
+  
+  timeText:set("Time : ")
+  FPSText:set("FPS : ")
+  goatsText:set("Goat's on Board : ")
+  tigersText:set("Tiger's Blocked : ")
+  goatsDeadText:set("Goat's Dead : ")
+  
+  if N.goatsDead > 5 then
+    turnText:set("TIGER's WIN!")
+  elseif N.endgame then
+    turnText:set("GOAT's WIN !")
+  elseif turn == 1 then
+    turnText:set("Goat's Turn!!")
+  else
+    turnText:set("Tiger's Turn!!")
+  end
+  
+  
+  timeText:addf(tostring(math.floor(time)),250,"right")
+  FPSText:addf(tostring(math.floor(frame/time)),250,"right")
+  goatsText:addf(tostring(N.goatsBoard),250,"right")
+  tigersText:addf(tostring(N.tigersBlocked),250,"right")
+  goatsDeadText:addf(tostring(N.goatsDead),250,"right")
+  
+  
+  love.graphics.draw(timeText,640,10)
+  love.graphics.draw(FPSText,640,30)
+  love.graphics.draw(goatsText,640,60)
+  love.graphics.draw(tigersText,640,90)
+  love.graphics.draw(goatsDeadText,640,120)
+  
+  love.graphics.draw(turnText,640,300)
+  
+  
+  
+  
 	for i=1,5 do
     for j = 1,5 do
       if N.A[i][j] ~= nil then
@@ -157,14 +144,8 @@ function love.draw()
     end
     
 	end
-    if N.goatsDead > 5 then
-    love.graphics.print("Tigers Win",10,10)
-    return
-  elseif N.endgame then
-    love.graphics.print("Goats Win",10,10)
-    return
-  end
-  --mv = {};
+  
+
 end
 
 function love.mousepressed( x , y , button , isTouch)
@@ -188,7 +169,7 @@ function love.mousepressed( x , y , button , isTouch)
     
     if state == 0 then -- Versions prior to 0.10.0 use the MouseConstant 'l'
       mv = {}
-      if N.A[x][y] == 1 or N.A[x][y] == -1 then
+      if N.A[x][y] == turn then
         mv.src = {}
         mv.src.x = x
         mv.src.y = y

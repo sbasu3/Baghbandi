@@ -18,58 +18,35 @@ function GS:initialize(t)
   
   self.A = {}
 
-  if t == nil then
-    for i =1,BOARDSIZE do
-      self.A[i] = {}
-      --print(g.A[i])
-      for j =1,BOARDSIZE do
-        self.A[i][j] = 0
-      end
-    end
-  --put tigers on corners
-    self.A[1][1] = -1
-    --self.A[1][3] = -1
-    --self.A[1][5] = -1
-    self.A[1][BOARDSIZE] = -1
-    self.A[BOARDSIZE][1] = -1
-    self.A[BOARDSIZE][BOARDSIZE] = -1
-      --remember last move
-    self.mv = nil
-    self.postA = nil
-    --remember whose turn is it now
-    -- Goat is G or 1
-    -- Tiger is T or -1
-    -- Empty is 0
-    self.color = -1
-    self.goatsBoard = 0
-    self.goatsDead = 0
-    self.tigersBlocked = 0
 
-    --remember moves
-    self.moves = 0
-  else
-    for i =1,BOARDSIZE do
-      self.A[i] = {}
-      --print(g.A[i])
-      for j =1,BOARDSIZE do
-        self.A[i][j] = t.A[i][j]
-      end
+  for i =1,BOARDSIZE do
+    self.A[i] = {}
+    --print(g.A[i])
+    for j =1,BOARDSIZE do
+      self.A[i][j] = 0
     end
-        --remember last move
-    self.mv = t.mv
-    self.postA = t.postA
-    --remember whose turn is it now
-    -- Goat is G or 1
-    -- Tiger is T or -1
-    -- Empty is 0
-    self.color = -t.color
-    self.goatsBoard = t.goatsBoard
-    self.goatsDead = t.goatsDead
-    self.tigersBlocked = t.tigersBlocked
-
-    --remember moves
-    self.moves = t.moves
   end
+--put tigers on corners
+  self.A[1][1] = -1
+  --self.A[1][3] = -1
+  --self.A[1][5] = -1
+  self.A[1][BOARDSIZE] = -1
+  self.A[BOARDSIZE][1] = -1
+  self.A[BOARDSIZE][BOARDSIZE] = -1
+    --remember last move
+  self.mv = nil
+  self.postA = nil
+  --remember whose turn is it now
+  -- Goat is G or 1
+  -- Tiger is T or -1
+  -- Empty is 0
+  self.color = -1
+  self.goatsBoard = 0
+  self.goatsDead = 0
+  self.tigersBlocked = 0
+
+  --remember moves
+  self.moves = 0
   --return g
 end
 
@@ -125,7 +102,7 @@ function GS:apply()
 	end
 	self.postA[self.mv.dst.x][self.mv.dst.y] = self.mv.color;
   
-  if self.mv.color == 1 and mv.src == nil then
+  if self.mv.color == 1 and self.mv.src == nil then
     self.goatsBoard = self.goatsBoard + 1
   end
   
@@ -185,7 +162,7 @@ function GS:validate(mv)
 		return true;
 	elseif dist == math.sqrt(2) then
 		return self:isSpecial(X1,Y1) or self:isSpecial(X2,Y2);
-	elseif (dist == 2*math.sqrt(2) or dist == 2) and (self:isSpecial(X1,Y1) or self:isSpecial(X2,Y2)) then
+	elseif ((dist == 2*math.sqrt(2) and (self:isSpecial(X1,Y1) or self:isSpecial(X2,Y2))) or dist == 2 )  then
 		local middleX = (X1+X2)/2;
 		local middleY = (Y1+Y2)/2;
 		if self.A[middleX][middleY] ~= 1 or mv.color ~= -1 then

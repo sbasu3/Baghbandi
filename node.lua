@@ -123,7 +123,7 @@ function node:getChildWithMove(mv)
   assert(mv ~= nil, "move not there")
   for _,child in pairs(self.children) do
     assert(child.mv ~= nil or child.mv ~= {}, "child mv not there!")
-    if child.mv.src == nil and child.color == 1 then
+    if child.mv.src == nil and child.color == mv.color then
       if child.mv.dst.x == mv.dst.x and child.mv.dst.y == mv.dst.y then
         return child
       end
@@ -181,6 +181,7 @@ function node:generateMoves()
             --local n = node:clone(math.random(1,1000))
       
             game:addMove(m)
+            assert(m ~= nil , "Move nil")
             game:apply()
             --game.A = game.postA
             
