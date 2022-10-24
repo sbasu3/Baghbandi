@@ -1,6 +1,3 @@
---require "gamestate"
-
-
 function Heuristic(n)
   -- retuns positive value for goat
   -- negative value for tiger
@@ -90,7 +87,7 @@ function aiMove()
     return
   end
 
-  N:sort_children(N.color);
+  N:sort_children(-N.color);
 
     
   assert( N.num_children > 0 , "No children created ")

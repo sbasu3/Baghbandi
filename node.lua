@@ -222,12 +222,13 @@ function node:generateMoves()
       end
     end
   elseif self.color == 1 then
+    self.tigersBlocked = 0
     for idx = 1,num_t do
       local m = {}
       m.src = {}
       m.src.x = t[idx]["x"]
       m.src.y = t[idx]["y"]
-      self.tigersBlocked = 0
+
       local blocked = true
       for j = -2,2 do
         for k = -2,2 do

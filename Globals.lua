@@ -7,7 +7,7 @@ BSIZE = 50;
 GAP = (SIZE-2*BSIZE)/4;
 
 -- Define AI depth to lookup
-DEPTH = 1;
+DEPTH = 2;
 
 -- Define who is AI
 AI = -1;
