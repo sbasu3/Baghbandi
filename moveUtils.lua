@@ -96,6 +96,8 @@ function aiMove()
 
   N = N:getChildWithMove(mv);
   
+  collectgarbage("collect");
+  
   turn = -turn;
   iteration = iteration + 1;
   mv = nil

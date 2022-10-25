@@ -4,7 +4,7 @@ function drawBoard(N,K)
 	local gap = (N - 2*K)/4; 
 
 	love.graphics.setColor(0,0,0,255);
-	love.graphics.setLineWidth(5);
+	love.graphics.setLineWidth(3);
 	love.graphics.setLineStyle("smooth");
 	--love.graphics.setLine(5,"smooth");
 

@@ -33,26 +33,46 @@ function love.load(arg)
   mv["dst"] = nil
   
 	--love.graphics.setMode(SIZE,SIZE,false,true,0);
+  local width, height = love.graphics.getDimensions( )
+  --local wd = love.graphics.getWidth()
+  --local ht = love.graphics.getHeight()
+    
+  print(width)
+  print(height)
+  
+  SIZE = height
+  BSIZE = (width - SIZE)/5
+    
+  GAP = (SIZE-2*BSIZE)/4;
+  
+  TIGERSIZE = height/8;
+  GOATSIZE = height/8;
+  
+  TEXTWRAP = 150
+
 	love.window.setMode(SIZE + 5*BSIZE,SIZE,{fullscreen = false,vsync = true,resizable = false, borderless = false,centered = false});
   love.window.setTitle("Baghbandi");
-  
+    
+  font_16 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",16);
   font_20 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",20);
   font_32 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",32);
 
-  timeText = love.graphics.newText(font_20, {{1, 1, 0},""})
-  FPSText = love.graphics.newText(font_20, {{1, 1, 0},""})
-  turnText = love.graphics.newText(font_32, {{1, 1, 0},""})
-  goatsText = love.graphics.newText(font_32 ,{{1,1,0},""})
-  tigersText = love.graphics.newText(font_32 ,{{1,1,0},""})
-  goatsDeadText = love.graphics.newText(font_32 ,{{1,1,0},""})
+  timeText = love.graphics.newText(font_16, {{1, 1, 0},""})
+  FPSText = love.graphics.newText(font_16, {{1, 1, 0},""})
+  turnText = love.graphics.newText(font_16, {{1, 1, 0},""})
+  goatsText = love.graphics.newText(font_16 ,{{1,1,0},""})
+  tigersText = love.graphics.newText(font_16 ,{{1,1,0},""})
+  goatsDeadText = love.graphics.newText(font_16 ,{{1,1,0},""})
   
   
 	board = love.graphics.newImage("assets/images/back.png");
 	goat = love.graphics.newImage("assets/images/goat.png");
 	tiger = love.graphics.newImage("assets/images/tiger.png");
 	myquad = love.graphics.newQuad(0 , 0, SIZE, SIZE , SIZE, SIZE);
-	gquad = love.graphics.newQuad(0,0,100,100,100,100);
-	tquad = love.graphics.newQuad(0,0,60,100,60,100);
+	gquad = love.graphics.newQuad(0,0,TIGERSIZE,TIGERSIZE,TIGERSIZE,TIGERSIZE);
+	tquad = love.graphics.newQuad(0,0,0.6*GOATSIZE,GOATSIZE,0.6*GOATSIZE,GOATSIZE);
+
+ 
 end
 
 
@@ -96,7 +116,7 @@ function love.draw()
   
   timeText:set("Time : ")
   FPSText:set("FPS : ")
-  goatsText:set("Goat's on Board : ")
+  goatsText:set("Goat's on Board: ")
   tigersText:set("Tiger's Blocked : ")
   goatsDeadText:set("Goat's Dead : ")
   
@@ -111,20 +131,20 @@ function love.draw()
   end
   
   
-  timeText:addf(tostring(math.floor(time)),250,"right")
-  FPSText:addf(tostring(math.floor(frame/time)),250,"right")
-  goatsText:addf(tostring(N.goatsBoard),250,"right")
-  tigersText:addf(tostring(N.tigersBlocked),250,"right")
-  goatsDeadText:addf(tostring(N.goatsDead),250,"right")
+  timeText:addf(tostring(math.floor(time)),TEXTWRAP,"right")
+  FPSText:addf(tostring(math.floor(frame/time)),TEXTWRAP,"right")
+  goatsText:addf(tostring(N.goatsBoard),TEXTWRAP,"right")
+  tigersText:addf(tostring(N.tigersBlocked),TEXTWRAP,"right")
+  goatsDeadText:addf(tostring(N.goatsDead),TEXTWRAP,"right")
   
   
-  love.graphics.draw(timeText,640,10)
-  love.graphics.draw(FPSText,640,30)
-  love.graphics.draw(goatsText,640,60)
-  love.graphics.draw(tigersText,640,90)
-  love.graphics.draw(goatsDeadText,640,120)
+  love.graphics.draw(timeText,SIZE+BSIZE,10)
+  love.graphics.draw(FPSText,SIZE+BSIZE,30)
+  love.graphics.draw(goatsText,SIZE+BSIZE,60)
+  love.graphics.draw(tigersText,SIZE+BSIZE,90)
+  love.graphics.draw(goatsDeadText,SIZE+BSIZE,120)
   
-  love.graphics.draw(turnText,640,300)
+  love.graphics.draw(turnText,SIZE+BSIZE,SIZE/2)
   
   
   
@@ -134,9 +154,9 @@ function love.draw()
       if N.A[i][j] ~= nil then
         if N.A[i][j] == 1 then
           --love.graphics.setColor(254,100,46,255);
-            love.graphics.draw(goat,gquad,GAP*(i-1),GAP*(j-1));
+            love.graphics.draw(goat,gquad,BSIZE+GAP*(i-1),BSIZE+GAP*(j-1));
         elseif N.A[i][j] == -1 then
-          love.graphics.draw(tiger,tquad,GAP*(i-1),GAP*(j-1));
+          love.graphics.draw(tiger,tquad,BSIZE+GAP*(i-1),BSIZE+GAP*(j-1));
         end
         if N.A[i][j] ~= 0 then
         end
@@ -148,8 +168,9 @@ function love.draw()
 
 end
 
-function love.mousepressed( x , y , button , isTouch)
-	local gap = (SIZE-BSIZE)/4;
+--function love.mousepressed( x , y , button , isTouch)
+function love.touchpressed( id, x, y, dx, dy, pressure )
+
 	local NearList = {};
 
   if turn == AI then
@@ -157,40 +178,40 @@ function love.mousepressed( x , y , button , isTouch)
   end
   --love.graphics.print("Click",x,y)
 
-	if button == 1 then
-		for i = 1,5 do
-      NearList[i] = {}
-			for j =1,5 do
-				--NearList[ (i-1)*5 + j] = distance(x,y,BSIZE+gap*(j-1),BSIZE+gap*(i-1));
-        NearList[i][j] = distance(x,y,BSIZE+gap*(i-1),BSIZE+gap*(j-1));
-			end
-		end
-		local x,y = GetMin(NearList);
-    
-    if state == 0 then -- Versions prior to 0.10.0 use the MouseConstant 'l'
-      mv = {}
-      if N.A[x][y] == turn then
-        mv.src = {}
-        mv.src.x = x
-        mv.src.y = y
-        state = 1
-      else
-        mv.dst = {}
-        mv.dst.x = x
-        mv.dst.y = y
-        state = 2
-      end
-      
-    elseif state == 1 then
+
+  for i = 1,5 do
+    NearList[i] = {}
+    for j =1,5 do
+      --NearList[ (i-1)*5 + j] = distance(x,y,BSIZE+gap*(j-1),BSIZE+gap*(i-1));
+      NearList[i][j] = distance(x,y,BSIZE+GAP*(i-1),BSIZE+GAP*(j-1));
+    end
+  end
+  local x,y = GetMin(NearList);
+  
+  if state == 0 then -- Versions prior to 0.10.0 use the MouseConstant 'l'
+    mv = {}
+    if N.A[x][y] == turn then
+      mv.src = {}
+      mv.src.x = x
+      mv.src.y = y
+      state = 1
+    else
       mv.dst = {}
       mv.dst.x = x
       mv.dst.y = y
       state = 2
     end
-    mv.color = turn
-    print("Mouse clicked at",x,y);
+    
+  elseif state == 1 then
+    mv.dst = {}
+    mv.dst.x = x
+    mv.dst.y = y
+    state = 2
   end
-  
+  mv.color = turn
+  print("Mouse clicked at",x,y);
+
+
 
 end
 
