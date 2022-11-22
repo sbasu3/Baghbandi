@@ -168,8 +168,8 @@ function love.draw()
 
 end
 
---function love.mousepressed( x , y , button , isTouch)
-function love.touchpressed( id, x, y, dx, dy, pressure )
+function love.mousepressed( x , y , button , isTouch)
+--function love.touchpressed( id, x, y, dx, dy, pressure )
 
 	local NearList = {};
 
