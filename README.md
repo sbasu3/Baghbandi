@@ -1,4 +1,3 @@
 # Baghbandi
-Baghbandi Board game 2 Player/Single Player with AI
-Currently only tigers are automated.
+Baghbandi Board game Single Player with AI
 Full UI coming soon.

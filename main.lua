@@ -4,6 +4,7 @@ require "Interact"
 
 require "node"
 require "negamax"
+require "menu"
 
 socket = require("socket")
 
@@ -56,6 +57,7 @@ function love.load(arg)
   font_16 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",16);
   font_20 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",20);
   font_32 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",32);
+  font_64 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",64);
 
   timeText = love.graphics.newText(font_16, {{1, 1, 0},""})
   FPSText = love.graphics.newText(font_16, {{1, 1, 0},""})
@@ -68,16 +70,19 @@ function love.load(arg)
 	board = love.graphics.newImage("assets/images/back.png");
 	goat = love.graphics.newImage("assets/images/goat.png");
 	tiger = love.graphics.newImage("assets/images/tiger.png");
+  menu = love.graphics.newImage("assets/images/44780.jpg");
+  
 	myquad = love.graphics.newQuad(0 , 0, SIZE, SIZE , SIZE, SIZE);
 	gquad = love.graphics.newQuad(0,0,TIGERSIZE,TIGERSIZE,TIGERSIZE,TIGERSIZE);
 	tquad = love.graphics.newQuad(0,0,0.6*GOATSIZE,GOATSIZE,0.6*GOATSIZE,GOATSIZE);
+  menuquad = love.graphics.newQuad(0 , 0, width, height , width, height);
 
- 
+  createMenu();
 end
 
 
 function love.update(dt)
-
+--[[
   time = time + dt
 
   
@@ -95,12 +100,11 @@ function love.update(dt)
     print("Goats Dead:",N.goatsDead)
   end
 
-
+]]--
 end
 
-
-function love.draw()
-	love.graphics.clear();
+function drawGame()
+  love.graphics.clear();
 	love.graphics.reset();
   love.graphics.draw(board, myquad, 0, 0);
 	drawBoard(SIZE,BSIZE);
@@ -165,7 +169,10 @@ function love.draw()
     
 	end
   
+end
 
+function love.draw()
+	drawMenu();
 end
 
 function love.mousepressed( x , y , button , isTouch)
