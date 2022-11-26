@@ -20,17 +20,17 @@ function selectBack()
 end
 
 function selectEasy()
-  DEPTH = 2;
+  DEPTH = 1;
    love.window.showMessageBox( "Easy Selected", "", info, true );
 end
 
 function selectMedium()
-  DEPTH = 3;
+  DEPTH = 2;
   love.window.showMessageBox( "Medium Selected", "", info, true );
 end
 
 function selectHard()
-  DEPTH = 4;
+  DEPTH = 3;
    love.window.showMessageBox( "Hard Selected", "", info, true );
 end
 
