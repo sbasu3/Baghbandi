@@ -1,19 +1,19 @@
 function drawBoard(N,K)
 	local Points;
 	local Lines;
-	local gap = (N - 2*K)/4; 
+	--local gap = (N - 2*K)/4; 
 
-	love.graphics.setColor(0,0,0,255);
+	love.graphics.setColor(138/255,43/255,226/255,1);
 	love.graphics.setLineWidth(3);
 	love.graphics.setLineStyle("smooth");
 	--love.graphics.setLine(5,"smooth");
 
 	for i = 1,5 do			--iTH vertical line
-		love.graphics.line( K + gap * (i-1) , K , K + gap * (i-1) , N - K );
+		love.graphics.line( K + GAP * (i-1) , K , K + GAP * (i-1) , N - K );
 	end
 
 	for i = 1,5 do			--ith Horizontal line
-		love.graphics.line(K,K + gap * (i-1),N - K,K + gap * (i-1) );
+		love.graphics.line(K,K + GAP * (i-1),N - K,K + GAP * (i-1) );
 	end
 
 	-- Diagonals

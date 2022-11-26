@@ -28,11 +28,25 @@ function exitfn()
 end
 
 function howTo()
-  love.window.showMessageBox( "How To Play", howToMessage, info, true );
+  uistate = 4;
 end
 
-function policy()
-  love.window.showMessageBox( "Privacy Policy", policyMessage, info, true );
+function drawHowTo()
+    --love.window.showMessageBox( "How To Play", howToMessage, info, true );
+  local ww = love.graphics.getWidth();
+  local hh = love.graphics.getHeight();
+  
+  --love.graphics.setBackgroundColor(0,0.5,0.5,1);
+  love.graphics.clear();
+  love.graphics.reset();
+  love.graphics.draw(menu, menuquad, 0, 0);
+  love.graphics.reset();
+  
+  
+  howToText:clear();
+  howToText:addf(howToMessage,0.6*ww,"center");
+  love.graphics.draw(howToText,(0.1*ww),(hh/4));
+  --love.graphics.print(howToMessage,font_20,(ww/6),(hh/4));
 end
 
  
@@ -62,9 +76,38 @@ function drawMenu()
   local titleTextW = font_64:getWidth(titleText);
   local titleTextH = font_64:getHeight(titleText);
   
+  --love.graphics.setColor(1,1,0,1);
+
+  local x0 = 0.9*ww;
+  local y0 = 0.05*hh;
+  
+  if OS == 1 then
+    local mx,my = love.mouse.getPosition();
+
+    local hot = (mx > x0) and (mx < (x0 + Radius)) and (my > y0) and ( my < y0 + Radius);
+    local muteNow = love.mouse.isDown(1);
+    if muteNow and hot then
+      love.audio.stop();
+    end
+  elseif OS == 2 then
+    local mx = touchX;
+    local my = touchY;
+    local hot = (mx > x0) and (mx < (x0 + Radius)) and (my > y0) and ( my < y0 + Radius);
+    if hot and released then
+      love.audio.stop();
+    end
+  end
+  
+  if hot then
+    love.graphics.setColor(1,1,0,1);
+  else
+    love.graphics.setColor(1,215/255,0,1);
+  end
+  --love.graphics.circle("fill", x0, y0, Radius );
+  love.graphics.draw(mute,mutequad,x0-SIDE,y0-SIDE);
   
   love.graphics.setColor(0.5,0,0,1);
-  love.graphics.print(titleText,font_64,(ww/2) - (titleTextW/2), hh/5);
+  love.graphics.print(titleText,font_64,(ww/2) - (titleTextW/2), hh/8);
   
   for i,button in ipairs(AllButtonsMenu) do
     --print(i);

@@ -42,6 +42,7 @@ function love.load(arg)
     OS = 1; -- Linux == 1
   elseif osString == "Android" then
     OS = 2; -- Android == 2
+    BUTTON_HEIGHT = height/10;
   else
     OS = 3;
   end
@@ -60,41 +61,52 @@ function love.load(arg)
   print(width)
   print(height)
   
-  SIZE = height
-  BSIZE = (width - SIZE)/5
-    
+  SIZE = height;
+
+  BORDER = 32;
+  BSIZE = BORDER;
+  
+  OFFSETX = 0;
+  OFFSETY = 0;
   GAP = (SIZE-2*BSIZE)/4;
   
   TIGERSIZE = height/8;
   GOATSIZE = height/8;
   
-  TEXTWRAP = 150
+  TEXTWRAP = 100;
+  
+  Radius = 0.05*height;
+  SIDE = 0.707*Radius;
 
 	love.window.setMode(SIZE + 5*BSIZE,SIZE,{fullscreen = false,vsync = true,resizable = false, borderless = false,centered = false});
   love.window.setTitle("Baghbandi");
-    
+  
+  font_12 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",12);
   font_16 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",16);
   font_20 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",20);
   font_32 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",32);
   font_64 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",64);
 
-  timeText = love.graphics.newText(font_16, {{1, 1, 0},""})
-  FPSText = love.graphics.newText(font_16, {{1, 1, 0},""})
-  turnText = love.graphics.newText(font_16, {{1, 1, 0},""})
-  goatsText = love.graphics.newText(font_16 ,{{1,1,0},""})
-  tigersText = love.graphics.newText(font_16 ,{{1,1,0},""})
-  goatsDeadText = love.graphics.newText(font_16 ,{{1,1,0},""})
+  timeText = love.graphics.newText(font_12, {{1, 1, 0},""});
+  FPSText = love.graphics.newText(font_12, {{1, 1, 0},""});
+  turnText = love.graphics.newText(font_12, {{1, 1, 0},""});
+  goatsText = love.graphics.newText(font_12 ,{{1,1,0},""});
+  tigersText = love.graphics.newText(font_12 ,{{1,1,0},""});
+  goatsDeadText = love.graphics.newText(font_12 ,{{1,1,0},""});
+  howToText = love.graphics.newText(font_20,{{0,0,0,1},howToMessage});
   
   
 	board = love.graphics.newImage("assets/images/back.png");
 	goat = love.graphics.newImage("assets/images/goat.png");
 	tiger = love.graphics.newImage("assets/images/tiger.png");
   menu = love.graphics.newImage("assets/images/44780.jpg");
+  mute = love.graphics.newImage("assets/images/icons8-no-audio-50.png");
   
 	myquad = love.graphics.newQuad(0 , 0, SIZE, SIZE , SIZE, SIZE);
 	gquad = love.graphics.newQuad(0,0,TIGERSIZE,TIGERSIZE,TIGERSIZE,TIGERSIZE);
 	tquad = love.graphics.newQuad(0,0,0.6*GOATSIZE,GOATSIZE,0.6*GOATSIZE,GOATSIZE);
   menuquad = love.graphics.newQuad(0 , 0, width, height , width, height);
+  mutequad = love.graphics.newQuad(0,0,width/20,width/20,width/20,width/20);
   
   sourceMain = love.audio.newSource( "assets/sounds/554__bebeto__ambient-loop.mp3", "stream");
   sourceMain:setLooping(true)
@@ -162,9 +174,13 @@ function drawGame()
   goatsDeadText:set("Goat's Dead : ")
   
   if N.goatsDead > 5 then
-    turnText:set("TIGER's WIN!")
+    turnText:set("TIGER's WIN!");
+    love.window.showMessageBox( "Tigers WIN", "", info, true );
+    uistate = 1;
   elseif N.endgame then
-    turnText:set("GOAT's WIN !")
+    turnText:set("GOAT's WIN !");
+    love.window.showMessageBox( "Goats WIN", "", info, true );
+    uistate = 1;
   elseif turn == 1 then
     turnText:set("Goat's Turn!!")
   else
@@ -179,13 +195,13 @@ function drawGame()
   goatsDeadText:addf(tostring(N.goatsDead),TEXTWRAP,"right")
   
   
-  love.graphics.draw(timeText,SIZE+BSIZE,10)
-  love.graphics.draw(FPSText,SIZE+BSIZE,30)
-  love.graphics.draw(goatsText,SIZE+BSIZE,60)
-  love.graphics.draw(tigersText,SIZE+BSIZE,90)
-  love.graphics.draw(goatsDeadText,SIZE+BSIZE,120)
+  love.graphics.draw(timeText,SIZE+BSIZE/2,10)
+  love.graphics.draw(FPSText,SIZE+BSIZE/2,30)
+  love.graphics.draw(goatsText,SIZE+BSIZE/2,60)
+  love.graphics.draw(tigersText,SIZE+BSIZE/2,90)
+  love.graphics.draw(goatsDeadText,SIZE+BSIZE/2,120)
   
-  love.graphics.draw(turnText,SIZE+BSIZE,SIZE/2)
+  love.graphics.draw(turnText,SIZE+BSIZE/2,SIZE/2)
   
   
   
@@ -196,10 +212,21 @@ function drawGame()
         if N.A[i][j] == 1 then
           --love.graphics.setColor(254,100,46,255);
           --love.graphics.draw(goat,gquad,BSIZE+GAP*(i-1),BSIZE+GAP*(j-1));
-          love.graphics.draw(goat,gquad,GAP*(i-1),GAP*(j-1));
+          if OS == 1 then
+            love.graphics.draw(goat,gquad,GAP*(i-1),GAP*(j-1));
+          else
+            love.graphics.draw(goat,gquad,GAP*(i-1)-OFFSETX,GAP*(j-1)-OFFSETY);
+          end
+          
         elseif N.A[i][j] == -1 then
           --love.graphics.draw(tiger,tquad,BSIZE+GAP*(i-1),BSIZE+GAP*(j-1));
-          love.graphics.draw(tiger,tquad,GAP*(i-1),GAP*(j-1));
+          
+          if OS == 1 then
+            love.graphics.draw(tiger,tquad,GAP*(i-1),GAP*(j-1));
+          else
+            love.graphics.draw(tiger,tquad,GAP*(i-1)-OFFSETX,GAP*(j-1)-OFFSETY);
+          end
+          
         end
         if N.A[i][j] ~= 0 then
         end
@@ -217,6 +244,8 @@ function love.draw()
     drawSettings();
   elseif uistate == 3 then
     drawGame();
+  elseif uistate ==4 then
+    drawHowTo();
   end
   
 end
