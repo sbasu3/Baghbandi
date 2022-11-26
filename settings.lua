@@ -7,12 +7,12 @@ settingsText = "Settings";
 
 function selectTiger()
   AI = 1;
-  love.window.showMessageBox( "Playing as Tiger", "", info, true );
+  love.window.showMessageBox( "Playing as Tiger", "", info, false );
 end
 
 function selectGoat()
     AI = -1;
-  love.window.showMessageBox( "Playing as Goat", "", info, true );
+  love.window.showMessageBox( "Playing as Goat", "", info, false );
 end
 
 function selectBack()
@@ -21,17 +21,17 @@ end
 
 function selectEasy()
   DEPTH = 1;
-   love.window.showMessageBox( "Easy Selected", "", info, true );
+   love.window.showMessageBox( "Easy Selected", "", info, false );
 end
 
 function selectMedium()
   DEPTH = 2;
-  love.window.showMessageBox( "Medium Selected", "", info, true );
+  love.window.showMessageBox( "Medium Selected", "", info, false );
 end
 
 function selectHard()
   DEPTH = 3;
-   love.window.showMessageBox( "Hard Selected", "", info, true );
+   love.window.showMessageBox( "Hard Selected", "", info, false );
 end
 
 function createSettings()

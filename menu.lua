@@ -42,9 +42,9 @@ function drawHowTo()
   love.graphics.draw(menu, menuquad, 0, 0);
   love.graphics.reset();
   
-  
+  love.graphics.setColor(0,0,0,1);
   howToText:clear();
-  howToText:addf(howToMessage,0.6*ww,"center");
+  howToText:addf(howToMessage,0.8*ww,"center");
   love.graphics.draw(howToText,(0.1*ww),(hh/4));
   --love.graphics.print(howToMessage,font_20,(ww/6),(hh/4));
 end
