@@ -5,6 +5,7 @@ require "Interact"
 require "node"
 require "negamax"
 require "menu"
+require "settings"
 
 socket = require("socket")
 
@@ -34,7 +35,25 @@ function love.load(arg)
   mv["dst"] = nil
   
 	--love.graphics.setMode(SIZE,SIZE,false,true,0);
-  local width, height = love.graphics.getDimensions( )
+  local width, height = love.graphics.getDimensions()
+  osString = love.system.getOS()
+  print(osString);
+  if osString == "Linux" then
+    OS = 1; -- Linux == 1
+  elseif osString == "Android" then
+    OS = 2; -- Android == 2
+  else
+    OS = 3;
+  end
+  
+  print(OS);
+  
+  if OS == 2 then
+    touchX = 0;
+    touchY = 0;
+  end
+  
+  
   --local wd = love.graphics.getWidth()
   --local ht = love.graphics.getHeight()
     
@@ -76,34 +95,52 @@ function love.load(arg)
 	gquad = love.graphics.newQuad(0,0,TIGERSIZE,TIGERSIZE,TIGERSIZE,TIGERSIZE);
 	tquad = love.graphics.newQuad(0,0,0.6*GOATSIZE,GOATSIZE,0.6*GOATSIZE,GOATSIZE);
   menuquad = love.graphics.newQuad(0 , 0, width, height , width, height);
+  
+  sourceMain = love.audio.newSource( "assets/sounds/554__bebeto__ambient-loop.mp3", "stream");
+  sourceMain:setLooping(true)
+  sourceMain:play();
+  
+  sourceGame = love.audio.newSource("assets/sounds/103120__andylist__first-909-drum-loop.wav","stream");
+  sourceGame:setLooping(true);
+  
+  sourceEvent = love.audio.newSource("assets/sounds/220184__gameaudio__win-spacey.wav","stream");
+
 
   createMenu();
+  createSettings();
+  uistate = 1;
+  
 end
 
 
 function love.update(dt)
---[[
+
   time = time + dt
 
-  
-  if AI == turn then
-    sleep(1)
-    aiMove()
-  else
-    playerMove()
+  if uistate == 3 then
+    if AI == turn then
+      sleep(1);
+      aiMove();
+      sourceEvent:play();
+    else
+      playerMove();
+    end
+
+    if AI == turn then
+      assert(N ~= nil, "No child found");
+      print("Goats on Board:",N.goatsBoard);
+      print("Tigers Blocked:", N.tigersBlocked);
+      print("Goats Dead:",N.goatsDead);
+    end
   end
 
-  if AI == turn then
-    assert(N ~= nil, "No child found")
-    print("Goats on Board:",N.goatsBoard)
-    print("Tigers Blocked:", N.tigersBlocked)
-    print("Goats Dead:",N.goatsDead)
-  end
-
-]]--
 end
 
 function drawGame()
+  
+  sourceMain:stop();
+  sourceGame:play();
+  
   love.graphics.clear();
 	love.graphics.reset();
   love.graphics.draw(board, myquad, 0, 0);
@@ -158,9 +195,11 @@ function drawGame()
       if N.A[i][j] ~= nil then
         if N.A[i][j] == 1 then
           --love.graphics.setColor(254,100,46,255);
-            love.graphics.draw(goat,gquad,BSIZE+GAP*(i-1),BSIZE+GAP*(j-1));
+          --love.graphics.draw(goat,gquad,BSIZE+GAP*(i-1),BSIZE+GAP*(j-1));
+          love.graphics.draw(goat,gquad,GAP*(i-1),GAP*(j-1));
         elseif N.A[i][j] == -1 then
-          love.graphics.draw(tiger,tquad,BSIZE+GAP*(i-1),BSIZE+GAP*(j-1));
+          --love.graphics.draw(tiger,tquad,BSIZE+GAP*(i-1),BSIZE+GAP*(j-1));
+          love.graphics.draw(tiger,tquad,GAP*(i-1),GAP*(j-1));
         end
         if N.A[i][j] ~= 0 then
         end
@@ -172,11 +211,17 @@ function drawGame()
 end
 
 function love.draw()
-	drawMenu();
+  if uistate == 1 then
+    drawMenu();
+  elseif uistate == 2 then
+    drawSettings();
+  elseif uistate == 3 then
+    drawGame();
+  end
+  
 end
 
 function love.mousepressed( x , y , button , isTouch)
---function love.touchpressed( id, x, y, dx, dy, pressure )
 
 	local NearList = {};
 
@@ -193,32 +238,43 @@ function love.mousepressed( x , y , button , isTouch)
       NearList[i][j] = distance(x,y,BSIZE+GAP*(i-1),BSIZE+GAP*(j-1));
     end
   end
-  local x,y = GetMin(NearList);
+  local bx,by = GetMin(NearList);
   
   if state == 0 then -- Versions prior to 0.10.0 use the MouseConstant 'l'
     mv = {}
-    if N.A[x][y] == turn then
+    if N.A[bx][by] == turn then
       mv.src = {}
-      mv.src.x = x
-      mv.src.y = y
+      mv.src.x = bx
+      mv.src.y = by
       state = 1
     else
       mv.dst = {}
-      mv.dst.x = x
-      mv.dst.y = y
+      mv.dst.x = bx
+      mv.dst.y = by
       state = 2
     end
     
   elseif state == 1 then
     mv.dst = {}
-    mv.dst.x = x
-    mv.dst.y = y
+    mv.dst.x = bx
+    mv.dst.y = by
     state = 2
   end
   mv.color = turn
-  print("Mouse clicked at",x,y);
+  print("Mouse clicked at",bx,by);
 
+end
 
+function love.touchpressed( id, x, y, dx, dy, pressure )
 
+  touchX = x;
+  touchY = y;
+  released = false;
+end
+
+function love.touchreleased( id, x, y, dx, dy, pressure )
+  touchX = x;
+  touchY = y;
+  released = true;
 end
 

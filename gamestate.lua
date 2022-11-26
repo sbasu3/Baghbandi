@@ -167,7 +167,7 @@ function GS:validate(mv)
 		local middleY = (Y1+Y2)/2;
 		if self.A[middleX][middleY] ~= 1 or mv.color ~= -1 then
 			return false;
-		else 
+		else
 			return true;
 		end
 	else

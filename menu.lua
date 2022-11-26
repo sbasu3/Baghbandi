@@ -1,5 +1,6 @@
 require "Globals"
 
+
 function newButton(text,fn)
   return {
             text = text;
@@ -10,21 +11,37 @@ function newButton(text,fn)
 end
  
 AllButtonsMenu = {};
- 
+
+howToMessage = "Baghbandi is a game of Tigers and Goats.You can select to play as Tiger or Goat vs AI. If you are playing as Tiger, the Objective is to eat Goats by jumping over them. Only One jump is allowed in a turn and teh destination location has to be free. That means you cannot jump over 2 or more goats. If you mange to eat 6 Goats you win the game. If the Tigers are cornered and do not have a valid move then they loose the game. If you are playing as Goat , you have 20 Goats at your disposal to place anywhere on the Board. However the Goats once placed cannot be moved until all Goats are placed. If you manage to corner the Tigers , you win. If you loose 6 Goats you loose.";
+--policyMessage = "";
+
 function newGame()
+  uistate = 3;
 end
  
 function settings()
+  uistate = 2;
 end
  
 function exitfn()
+  love.event.quit()
+end
+
+function howTo()
+  love.window.showMessageBox( "How To Play", howToMessage, info, true );
+end
+
+function policy()
+  love.window.showMessageBox( "Privacy Policy", policyMessage, info, true );
 end
 
  
 function createMenu()
     table.insert(AllButtonsMenu,1,newButton("New Game",newGame));
     table.insert(AllButtonsMenu,2,newButton("Settings", settings));
-    table.insert(AllButtonsMenu,3,newButton("Exit", exitfn));
+    table.insert(AllButtonsMenu,3,newButton("How to Play",howTo));
+    --table.insert(AllButtonsMenu,4,newButton("Privacy Policy", policy));
+    table.insert(AllButtonsMenu,4,newButton("Exit", exitfn));
 end
 
 function drawMenu()
@@ -39,7 +56,7 @@ function drawMenu()
   
   
   local margin = 16;
-  local buttonWidth = ww/4;
+  local buttonWidth = ww/5;
   local totalHeight = (BUTTON_HEIGHT) + margin * #AllButtonsMenu;
   local pos = 0;
   local titleTextW = font_64:getWidth(titleText);
@@ -51,11 +68,44 @@ function drawMenu()
   
   for i,button in ipairs(AllButtonsMenu) do
     --print(i);
+    button.last = button.now;
     local bx = (ww/2) - (buttonWidth/2);
     local by = (hh/2) - (BUTTON_HEIGHT/2) - (totalHeight/2) + pos;
     
-    love.graphics.setColor(1,215/255,0,1);
+    if OS == 1 or OS == 3 then
+      local mx,my = love.mouse.getPosition();
     
+      local hot = (mx > bx) and (mx < (bx + buttonWidth)) and (my > by) and ( my < by + BUTTON_HEIGHT);
+    
+      if hot then
+        love.graphics.setColor(1,1,0,1);
+      else
+        love.graphics.setColor(1,215/255,0,1);
+      end
+ 
+      button.now = love.mouse.isDown(1);
+    
+      if button.now and not button.last and hot then
+        button.fn();
+      end
+    elseif OS == 2 then
+      local mx = touchX;
+      local my = touchY;
+      
+      local hot = (mx > bx) and (mx < (bx + buttonWidth)) and (my > by) and ( my < by + BUTTON_HEIGHT);
+
+      if hot then
+        love.graphics.setColor(1,1,0,1);
+      else
+        love.graphics.setColor(1,215/255,0,1);
+      end
+    
+      if hot and released then
+        button.fn()
+      end
+    end
+    
+
     love.graphics.rectangle(
       "fill",
       bx,

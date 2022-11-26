@@ -6,6 +6,8 @@ titleText = "Baghbandi"
 --SIZE = 640;
 --BSIZE = 50;
 BUTTON_HEIGHT = 50;
+
+--Default Values
 -- Define AI depth to lookup
 DEPTH = 1;
 
