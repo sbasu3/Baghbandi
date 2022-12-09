@@ -1,9 +1,5 @@
---require "menu"
-
-
-settingsMenu = {};
-
-settingsText = "Settings";
+require "ui"
+--require ("suit")
 
 function selectTiger()
   AI = 1;
@@ -35,16 +31,81 @@ function selectHard()
 end
 
 function createSettings()
-    table.insert(settingsMenu,1,newButton("Tiger",selectTiger));
-    table.insert(settingsMenu,2,newButton("Goat", selectGoat));
-    table.insert(settingsMenu,3,newButton("Easy",selectEasy));
-    table.insert(settingsMenu,4,newButton("Medium", selectMedium));
-    table.insert(settingsMenu,5,newButton("Hard", selectHard));
-    table.insert(settingsMenu,6,newButton("Back", selectBack));
+  local ww = love.graphics.getWidth();
+  local hh = love.graphics.getHeight();
+  
+  local size = {x=ww/6,y=BUTTON_HEIGHT};
+  
+  settingsMenu:addButton("Goat",size,{x=ww/5,y=hh/3},selectGoat);
+  settingsMenu:addButton("Tiger",size,{x=(3*ww)/5,y=hh/3},selectTiger);
+  settingsMenu:addButton("Easy",size,{x=ww/5,y=(2*hh)/3},selectEasy);
+  settingsMenu:addButton("Medium",size,{x=2*ww/5,y=(2*hh)/3},selectMedium);
+  settingsMenu:addButton("Hard",size,{x=3*ww/5,y=(2*hh)/3},selectHard);
+  settingsMenu:addButton("Back",size,{x=ww/2,y=(4*hh)/5},selectBack);
 end
   
+function drawSettingsSuit()
+    local ww = love.graphics.getWidth();
+    local hh = love.graphics.getHeight();
+    local showMessage = {};
+    -- put the layout origin at position (100,100)
+    -- cells will grow down and to the right of the origin
+    -- note the colon syntax
+    suit.layout:reset(ww/10,hh/10)
+
+    -- put 10 extra pixels between cells in each direction
+    suit.layout:padding(ww/20,hh/20)
+    
+    for i,button in ipairs(settingsMenu) do
+      
+      if i ==1 then
+        suit.Label("Play As:",suit.layout:col(ww/4,hh/10));
+      elseif i == 3 then
+        suit.layout:left();
+        suit.layout:left();
+        suit.Label("Difficulty:",suit.layout:row(ww/4,hh/10));
+      elseif i == 6 then
+        suit.layout:left();
+        suit.layout:left();
+      end
+      
+      
+      if (i == 1 or i == 2 ) and suit.Button(button.text, {id=i}, suit.layout:col()).hit  then
+          showMessage[i] = true
+      end
+      if (i == 3 or i == 4 or i == 5) and suit.Button(button.text, {id=i}, suit.layout:col(ww/10,hh/10)).hit  then
+          showMessage[i] = true
+      end
+      
+      if (i == 6) and suit.Button(button.text, {id=i}, suit.layout:row(ww/4,hh/10)).hit then
+        uistate = 1;
+      end
+      
+
+
+      -- if the button was pressed at least one time, but a label below
+      if showMessage[i] then
+          --suit.Label("i",suit.layout:row(ww/4,hh/10));
+          if i == 1 then
+            selectTiger();
+          elseif i == 2 then
+            selectGoat();
+          elseif i == 3 then
+            selectEasy();
+          elseif i == 4 then
+            selectMedium();
+          elseif i == 5 then
+            selectHard();
+          end
+          
+      end
+    end
+  end
   
-  function drawSettings()
+
+
+  
+function drawSettings()
     
     local ww = love.graphics.getWidth();
     local hh = love.graphics.getHeight();

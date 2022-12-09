@@ -8,6 +8,7 @@ require "menu"
 require "settings"
 
 socket = require("socket")
+--suit = require ("ui")
 
 function sleep(sec)
     socket.sleep(sec)
@@ -110,14 +111,18 @@ function love.load(arg)
   
   sourceMain = love.audio.newSource( "assets/sounds/554__bebeto__ambient-loop.mp3", "stream");
   sourceMain:setLooping(true)
-  sourceMain:play();
+  --only for debug
+  --sourceMain:play();
   
   sourceGame = love.audio.newSource("assets/sounds/103120__andylist__first-909-drum-loop.wav","stream");
   sourceGame:setLooping(true);
   
   sourceEvent = love.audio.newSource("assets/sounds/220184__gameaudio__win-spacey.wav","stream");
 
+  settingsMenu = ui:new(1);
 
+  settingsText = "Settings";
+  
   createMenu();
   createSettings();
   uistate = 1;
@@ -129,7 +134,9 @@ function love.update(dt)
 
   time = time + dt
 
-  if uistate == 3 then
+  if uistate == 2 then
+    --;
+  elseif uistate == 3 then
     if AI == turn then
       sleep(1);
       aiMove();
@@ -241,7 +248,9 @@ function love.draw()
   if uistate == 1 then
     drawMenu();
   elseif uistate == 2 then
-    drawSettings();
+    --drawSettings();
+    settingsMenu:draw();
+    --suit.draw();
   elseif uistate == 3 then
     drawGame();
   elseif uistate ==4 then
