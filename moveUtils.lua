@@ -30,7 +30,7 @@ function Heuristic(n)
   elseif n.goatsDead > 0 and n.color == -1 then
     return -math.huge
   else
-    return math.huge
+    return 0
   end
   
   
@@ -81,13 +81,15 @@ end
 function aiMove()
   
   assert(turn == -N.color, "some problem with turn")
-  N:setValue(minimax(N,DEPTH,-N.color))
+  N:setValue(negamax(N,DEPTH,-math.huge,math.huge,-N.color))
    
   if N.endgame == true then
     return
   end
 
-  N:sort_children(-N.color);
+  -- Sort descending (1 = highest value first): negamax values are from the
+  -- current player's perspective, so the highest-valued child is always best.
+  N:sort_children(1);
 
     
   assert( N.num_children > 0 , "No children created ")
@@ -110,7 +112,7 @@ function playerMove()
   end
     
   if N:validate(mv) then
-    N:setValue(minimax(N,DEPTH,-N.color))  
+    N:setValue(negamax(N,DEPTH,-math.huge,math.huge,-N.color))
     N = N:getChildWithMove(mv);
  
   

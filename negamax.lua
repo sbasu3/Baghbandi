@@ -14,13 +14,13 @@ function negamax(n,depth,alpha,beta,color)
 		return color * Heuristic(n);	
 	end
 
-	bestval = -math.huge;
+	local bestval = -math.huge;
 	n:generateMoves();
 	
   n:sort_children(n.color);
   
 	for key,child in pairs(n.children) do
-		val = -negamax(child,depth -1, -beta, -alpha , -color);
+		local val = -negamax(child,depth -1, -beta, -alpha , -color);
 		bestval = math.max(bestval,val);
     child:setValue(val);
 		alpha = math.max(alpha,val);
@@ -29,7 +29,9 @@ function negamax(n,depth,alpha,beta,color)
 		end
 	end
   
-  n:sort_children();
+  -- Sort descending (1 = highest value first) since negamax values are always
+  -- from the current player's perspective (higher = better).
+  n:sort_children(1);
 	
   return bestval;
 end
@@ -46,10 +48,10 @@ function  minimax( n, depth, color )
   
   if color == 1 then
         
-    bestval = -math.huge
+    local bestval = -math.huge
         
     for key,child in pairs(n.children) do
-      val = minimax( child, (depth - 1), -color )
+      local val = minimax( child, (depth - 1), -color )
       child:setValue(val)
       bestval = math.max( val , bestval )
     end
@@ -58,10 +60,10 @@ function  minimax( n, depth, color )
       
     
   else 
-    bestval = math.huge
+    local bestval = math.huge
         
     for key,child in pairs(n.children) do
-      val = minimax( child, (depth - 1), -color )
+      local val = minimax( child, (depth - 1), -color )
       child:setValue(val)
       bestval = math.min( val, bestval )
     end

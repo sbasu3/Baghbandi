@@ -82,7 +82,7 @@ end
 
 function node:delete_child(n)
   
-  for i=0,self.num_children do
+  for i=1,self.num_children do
     if self.children[i].id == n.id then
       table.remove(self.children,i) 
       break
@@ -96,7 +96,7 @@ end
 
 function node:delete_all_children()
   
-  for _ = self.num_children,0,-1 do
+  for _ = self.num_children,1,-1 do
     --self.children[i]:delete_all_children()
     table.remove(self.children)
   end
@@ -143,7 +143,7 @@ end
 
 
 function node:isTerminal()
-  if self.children == 0 then
+  if #self.children == 0 then
     return true
   else
     return false
@@ -162,7 +162,28 @@ function node:generateMoves()
   --local idx = 1
   assert(num_g == self.goatsBoard, "Goats on Board Mismatch")
   if self.color == -1 then
-    
+    -- Recalculate tigersBlocked for the current board state
+    self.tigersBlocked = 0
+    for idx = 1,num_t do
+      local blocked = true
+      for j = -2,2 do
+        for k = -2,2 do
+          local chk = {}
+          chk.src = {x=t[idx]["x"], y=t[idx]["y"]}
+          chk.dst = {x=t[idx]["x"]+j, y=t[idx]["y"]+k}
+          chk.color = -1
+          if self:validate(chk) then
+            blocked = false
+            break
+          end
+        end
+        if not blocked then break end
+      end
+      if blocked then
+        self.tigersBlocked = self.tigersBlocked + 1
+      end
+    end
+
     if num_g < (20 - self.goatsDead) then
       for i = 1,BOARDSIZE do
         for j = 1,BOARDSIZE do

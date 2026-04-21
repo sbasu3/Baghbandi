@@ -81,10 +81,11 @@ function drawMenu()
   local x0 = 0.9*ww;
   local y0 = 0.05*hh;
   
+  local hot = false;
   if OS == 1 then
     local mx,my = love.mouse.getPosition();
 
-    local hot = (mx > x0) and (mx < (x0 + Radius)) and (my > y0) and ( my < y0 + Radius);
+    hot = (mx > x0) and (mx < (x0 + Radius)) and (my > y0) and ( my < y0 + Radius);
     local muteNow = love.mouse.isDown(1);
     if muteNow and hot then
       love.audio.stop();
@@ -92,7 +93,7 @@ function drawMenu()
   elseif OS == 2 then
     local mx = touchX;
     local my = touchY;
-    local hot = (mx > x0) and (mx < (x0 + Radius)) and (my > y0) and ( my < y0 + Radius);
+    hot = (mx > x0) and (mx < (x0 + Radius)) and (my > y0) and ( my < y0 + Radius);
     if hot and released then
       love.audio.stop();
     end
