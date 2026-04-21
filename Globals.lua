@@ -15,3 +15,7 @@ DEPTH = 1;
 
 -- Define who is AI
 AI = -1;
+
+-- Define who is the human player
+-- Goat is 1, Tiger is -1
+PLAYER = 1;

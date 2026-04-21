@@ -91,12 +91,18 @@ function aiMove()
   -- current player's perspective, so the highest-valued child is always best.
   N:sort_children(1);
 
-    
-  assert( N.num_children > 0 , "No children created ")
+  if N.num_children == 0 then
+    N.endgame = true
+    return
+  end
 
   mv = N.children[1].mv;
 
-  N = N:getChildWithMove(mv);
+  local nextNode = N.children[1]
+  if nextNode == nil then
+    return
+  end
+  N = nextNode
   
   collectgarbage("collect");
   
@@ -113,7 +119,11 @@ function playerMove()
     
   if N:validate(mv) then
     N:setValue(negamax(N,DEPTH,-math.huge,math.huge,-N.color))
-    N = N:getChildWithMove(mv);
+    local nextNode = N:getChildWithMove(mv)
+    if nextNode == nil then
+      return
+    end
+    N = nextNode
  
   
     turn = -turn;

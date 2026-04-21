@@ -16,6 +16,10 @@ howToMessage = "Baghbandi is a game of Tigers and Goats.You can select to play a
 --policyMessage = "";
 
 function newGame()
+  AI = -PLAYER
+  if resetMatch ~= nil then
+    resetMatch()
+  end
   uistate = 3;
 end
  

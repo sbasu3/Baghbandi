@@ -2,13 +2,23 @@ require "ui"
 --require ("suit")
 
 function selectTiger()
+  PLAYER = -1;
   AI = 1;
-  love.window.showMessageBox( "Playing as Tiger", "", info, false );
+  if showPopup ~= nil then
+    showPopup("Playing as Tiger","")
+  else
+    love.window.showMessageBox( "Playing as Tiger", "", info, false );
+  end
 end
 
 function selectGoat()
-    AI = -1;
-  love.window.showMessageBox( "Playing as Goat", "", info, false );
+  PLAYER = 1;
+  AI = -1;
+  if showPopup ~= nil then
+    showPopup("Playing as Goat","")
+  else
+    love.window.showMessageBox( "Playing as Goat", "", info, false );
+  end
 end
 
 function selectBack()
@@ -17,17 +27,29 @@ end
 
 function selectEasy()
   DEPTH = 2;
-   love.window.showMessageBox( "Easy Selected", "", info, false );
+  if showPopup ~= nil then
+    showPopup("Easy Selected","")
+  else
+    love.window.showMessageBox( "Easy Selected", "", info, false );
+  end
 end
 
 function selectMedium()
   DEPTH = 3;
-  love.window.showMessageBox( "Medium Selected", "", info, false );
+  if showPopup ~= nil then
+    showPopup("Medium Selected","")
+  else
+    love.window.showMessageBox( "Medium Selected", "", info, false );
+  end
 end
 
 function selectHard()
   DEPTH = 4;
-   love.window.showMessageBox( "Hard Selected", "", info, false );
+  if showPopup ~= nil then
+    showPopup("Hard Selected","")
+  else
+    love.window.showMessageBox( "Hard Selected", "", info, false );
+  end
 end
 
 function createSettings()

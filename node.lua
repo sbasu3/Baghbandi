@@ -111,9 +111,21 @@ end
  function node:sort_children(color)
    
   if color == 1 then
-    table.sort(self.children,function (k1, k2) return k1.value > k2.value end )
+    table.sort(self.children,function (k1, k2)
+      local v1 = k1.value
+      local v2 = k2.value
+      if v1 == nil then v1 = -math.huge end
+      if v2 == nil then v2 = -math.huge end
+      return v1 > v2
+    end )
   else
-    table.sort(self.children,function (k1, k2) return k1.value < k2.value end )
+    table.sort(self.children,function (k1, k2)
+      local v1 = k1.value
+      local v2 = k2.value
+      if v1 == nil then v1 = math.huge end
+      if v2 == nil then v2 = math.huge end
+      return v1 < v2
+    end )
   end
   
 end
@@ -122,20 +134,19 @@ function node:getChildWithMove(mv)
 
   assert(mv ~= nil, "move not there")
   for _,child in pairs(self.children) do
-    assert(child.mv ~= nil or child.mv ~= {}, "child mv not there!")
-    if child.mv.src == nil and child.color == mv.color then
-      if child.mv.dst.x == mv.dst.x and child.mv.dst.y == mv.dst.y then
-        return child
-      end
-    else
-      --teh follwoing should not be triggered
-      if mv.src == nil then
-        return nil
-      end
-      
-      if child.mv.dst.x == mv.dst.x and child.mv.dst.y == mv.dst.y and child.mv.src.x == mv.src.x and child.mv.src.y == mv.src.y then
-        return child
-      end
+    assert(child.mv ~= nil, "child mv not there!")
+    local sameColor = (child.mv.color == mv.color)
+    local sameDst = (child.mv.dst.x == mv.dst.x and child.mv.dst.y == mv.dst.y)
+    local sameSrc = false
+
+    if child.mv.src == nil and mv.src == nil then
+      sameSrc = true
+    elseif child.mv.src ~= nil and mv.src ~= nil then
+      sameSrc = (child.mv.src.x == mv.src.x and child.mv.src.y == mv.src.y)
+    end
+
+    if sameColor and sameDst and sameSrc then
+      return child
     end
   end
   return nil
@@ -143,6 +154,10 @@ end
 
 
 function node:isTerminal()
+  if not self.generated then
+    self:generateMoves()
+  end
+
   if #self.children == 0 then
     return true
   else

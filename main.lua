@@ -14,30 +14,89 @@ function sleep(sec)
     socket.sleep(sec)
 end
 
+function showPopup(title,message,duration,onClose)
+  popup = {
+    title = title or "",
+    message = message or "",
+    timer = duration,
+    onClose = onClose
+  }
+end
+
+function closePopup()
+  if popup == nil then
+    return
+  end
+
+  local cb = popup.onClose
+  popup = nil
+  if cb ~= nil then
+    cb()
+  end
+end
+
+function drawPopup()
+  if popup == nil then
+    return
+  end
+
+  local ww = love.graphics.getWidth()
+  local hh = love.graphics.getHeight()
+  local w = math.max(ww * 0.5, 420)
+  local h = math.max(hh * 0.5, 260)
+  local x = (ww - w) / 2
+  local y = (hh - h) / 2
+
+  love.graphics.setColor(0,0,0,0.6)
+  love.graphics.rectangle("fill",0,0,ww,hh)
+
+  love.graphics.setColor(0.98,0.9,0.45,1)
+  love.graphics.rectangle("fill",x,y,w,h,12,12)
+  love.graphics.setColor(0.2,0.1,0.05,1)
+  love.graphics.setLineWidth(4)
+  love.graphics.rectangle("line",x,y,w,h,12,12)
+
+  love.graphics.setColor(0.2,0.1,0.05,1)
+  local titleY = y + h * 0.18
+  local bodyY = y + h * 0.5
+  local title = popup.title
+  local body = popup.message
+
+  if title ~= "" then
+    love.graphics.printf(title,font_64,x + 20,titleY,w - 40,"center")
+  end
+
+  if body ~= "" then
+    love.graphics.printf(body,font_20,x + 30,bodyY,w - 60,"center")
+  end
+end
+
+function resetMatch()
+  iteration = 1
+  turn = 1
+  state = 0
+  aiWaitTimer = 0
+  N = node:new()
+  popup = nil
+
+  mv = {}
+  mv.src = nil
+  mv.dst = nil
+end
+
 
 function love.load(arg)
   if arg[#arg] == "-debug" then require("mobdebug").start(); end
-	iteration = 1
 	--max = 4
 	--idle = false
 	time = 0;
 	frame = 0;
-  aiWaitTimer = 0;
-  
-  --whose turn is it
-  turn = 1;
-  
-  --mouse state
-  state = 0
-
-  N = node:new()
-
-  mv = {};
-  mv["src"] = nil
-  mv["dst"] = nil
+  resetMatch()
   
 	--love.graphics.setMode(SIZE,SIZE,false,true,0);
   local width, height = love.graphics.getDimensions()
+  local windowWidth = 1920
+  local windowHeight = 1080
   osString = love.system.getOS()
   print(osString);
   if osString == "Linux" then
@@ -63,6 +122,10 @@ function love.load(arg)
   print(width)
   print(height)
   
+  love.window.setMode(windowWidth,windowHeight,{fullscreen = false,vsync = true,resizable = false, borderless = false,centered = false});
+  love.window.setTitle("Baghbandi");
+
+  width, height = love.graphics.getDimensions()
   SIZE = height;
 
   BORDER = 32;
@@ -79,9 +142,6 @@ function love.load(arg)
   
   Radius = 0.05*height;
   SIDE = 0.707*Radius;
-
-	love.window.setMode(SIZE + 5*BSIZE,SIZE,{fullscreen = false,vsync = true,resizable = false, borderless = false,centered = false});
-  love.window.setTitle("Baghbandi");
   
   font_12 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",12);
   font_16 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",16);
@@ -92,6 +152,7 @@ function love.load(arg)
   timeText = love.graphics.newText(font_12, {{1, 1, 0},""});
   FPSText = love.graphics.newText(font_12, {{1, 1, 0},""});
   turnText = love.graphics.newText(font_12, {{1, 1, 0},""});
+  rolesText = love.graphics.newText(font_12, {{1, 1, 0},""});
   goatsText = love.graphics.newText(font_12 ,{{1,1,0},""});
   tigersText = love.graphics.newText(font_12 ,{{1,1,0},""});
   goatsDeadText = love.graphics.newText(font_12 ,{{1,1,0},""});
@@ -135,32 +196,36 @@ function love.update(dt)
 
   time = time + dt
 
+  if popup ~= nil then
+    if popup.timer ~= nil then
+      popup.timer = popup.timer - dt
+      if popup.timer <= 0 then
+        closePopup()
+      end
+    end
+  end
+
   if uistate == 3 then
     -- check game over first (bug 9: moved out of drawGame)
     if N.goatsDead > 5 then
-      love.window.showMessageBox( "Tigers WIN", "", info, true );
+      showPopup("Tigers WIN","",2.0)
       uistate = 1;
       return;
     elseif N.endgame then
-      love.window.showMessageBox( "Goats WIN", "", info, true );
+      showPopup("Goats WIN","",2.0)
       uistate = 1;
       return;
     end
 
     if AI == turn then
-      -- bug 8: use dt-based timer instead of blocking socket.sleep
-      aiWaitTimer = aiWaitTimer + dt;
-      if aiWaitTimer >= 1 then
-        aiWaitTimer = 0;
-        aiMove();
-        sourceEvent:play();
-      end
+      aiMove();
+      sourceEvent:play();
     else
       playerMove();
     end
 
     if AI == turn then
-      assert(N ~= nil, "No child found");
+      assert( N ~= nil, "N is nil in update" );
       print("Goats on Board:",N.goatsBoard);
       print("Tigers Blocked:", N.tigersBlocked);
       print("Goats Dead:",N.goatsDead);
@@ -184,6 +249,7 @@ function drawGame()
   timeText:clear()
   FPSText:clear()
   turnText:clear()
+  rolesText:clear()
   goatsText:clear()
   tigersText:clear()
   goatsDeadText:clear()
@@ -193,6 +259,14 @@ function drawGame()
   goatsText:set("Goat's on Board: ")
   tigersText:set("Tiger's Blocked : ")
   goatsDeadText:set("Goat's Dead : ")
+
+  local playerRole = "Goat"
+  local aiRole = "Tiger"
+  if PLAYER == -1 then
+    playerRole = "Tiger"
+    aiRole = "Goat"
+  end
+  rolesText:set("You: " .. playerRole .. " | AI: " .. aiRole)
   
   if N.goatsDead > 5 then
     turnText:set("TIGER's WIN!");
@@ -217,6 +291,7 @@ function drawGame()
   love.graphics.draw(goatsText,SIZE+BSIZE/2,60)
   love.graphics.draw(tigersText,SIZE+BSIZE/2,90)
   love.graphics.draw(goatsDeadText,SIZE+BSIZE/2,120)
+  love.graphics.draw(rolesText,SIZE+BSIZE/2,150)
   
   love.graphics.draw(turnText,SIZE+BSIZE/2,SIZE/2)
   
@@ -266,10 +341,17 @@ function love.draw()
   elseif uistate ==4 then
     drawHowTo();
   end
+
+  drawPopup()
   
 end
 
 function love.mousepressed( x , y , button , isTouch)
+
+  if popup ~= nil then
+    closePopup()
+    return
+  end
 
 	local NearList = {};
 
@@ -314,6 +396,11 @@ function love.mousepressed( x , y , button , isTouch)
 end
 
 function love.touchpressed( id, x, y, dx, dy, pressure )
+
+  if popup ~= nil then
+    closePopup()
+    return
+  end
 
   touchX = x;
   touchY = y;
