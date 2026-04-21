@@ -22,6 +22,7 @@ function love.load(arg)
 	--idle = false
 	time = 0;
 	frame = 0;
+  aiWaitTimer = 0;
   
   --whose turn is it
   turn = 1;
@@ -134,13 +135,26 @@ function love.update(dt)
 
   time = time + dt
 
-  if uistate == 2 then
-    --;
-  elseif uistate == 3 then
+  if uistate == 3 then
+    -- check game over first (bug 9: moved out of drawGame)
+    if N.goatsDead > 5 then
+      love.window.showMessageBox( "Tigers WIN", "", info, true );
+      uistate = 1;
+      return;
+    elseif N.endgame then
+      love.window.showMessageBox( "Goats WIN", "", info, true );
+      uistate = 1;
+      return;
+    end
+
     if AI == turn then
-      sleep(1);
-      aiMove();
-      sourceEvent:play();
+      -- bug 8: use dt-based timer instead of blocking socket.sleep
+      aiWaitTimer = aiWaitTimer + dt;
+      if aiWaitTimer >= 1 then
+        aiWaitTimer = 0;
+        aiMove();
+        sourceEvent:play();
+      end
     else
       playerMove();
     end
@@ -182,12 +196,8 @@ function drawGame()
   
   if N.goatsDead > 5 then
     turnText:set("TIGER's WIN!");
-    love.window.showMessageBox( "Tigers WIN", "", info, true );
-    uistate = 1;
   elseif N.endgame then
     turnText:set("GOAT's WIN !");
-    love.window.showMessageBox( "Goats WIN", "", info, true );
-    uistate = 1;
   elseif turn == 1 then
     turnText:set("Goat's Turn!!")
   else

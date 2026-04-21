@@ -44,6 +44,7 @@ function GS:initialize(t)
   self.goatsBoard = 0
   self.goatsDead = 0
   self.tigersBlocked = 0
+  self.endgame = false
 
   --remember moves
   self.moves = 0
@@ -87,11 +88,11 @@ function GS:apply()
 		--self.postA[mv.src.x][mv.src.y] = 0;
     local X1,Y1 = self.mv.src.x,self.mv.src.y;
     local X2,Y2 = self.mv.dst.x,self.mv.dst.y;
-    local dist = math.sqrt((X1-X2)^2+(Y1-Y2)^2);
+    local distSq = (X1-X2)^2+(Y1-Y2)^2;
     
     self.postA[self.mv.src.x][self.mv.src.y] = 0
   
-    if dist == 2*math.sqrt(2) or dist == 2 then
+    if distSq == 8 or distSq == 4 then
       local middleX = (X1+X2)/2;
       local middleY = (Y1+Y2)/2;
       self.postA[middleX][middleY] = 0;
@@ -156,13 +157,13 @@ function GS:validate(mv)
 	local X1,Y1 = mv.src.x,mv.src.y;
 	local X2,Y2 = mv.dst.x,mv.dst.y;
   
-	local dist = math.sqrt((X1-X2)^2+(Y1-Y2)^2);
+	local distSq = (X1-X2)^2 + (Y1-Y2)^2;
 
-	if dist == 1 then
+	if distSq == 1 then
 		return true;
-	elseif dist == math.sqrt(2) then
+	elseif distSq == 2 then
 		return self:isSpecial(X1,Y1) or self:isSpecial(X2,Y2);
-	elseif ((dist == 2*math.sqrt(2) and (self:isSpecial(X1,Y1) or self:isSpecial(X2,Y2))) or dist == 2 )  then
+	elseif (distSq == 8 and (self:isSpecial(X1,Y1) or self:isSpecial(X2,Y2))) or distSq == 4 then
 		local middleX = (X1+X2)/2;
 		local middleY = (Y1+Y2)/2;
 		if self.A[middleX][middleY] ~= 1 or mv.color ~= -1 then
