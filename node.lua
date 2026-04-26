@@ -228,31 +228,34 @@ function node:generateMoves()
       end
     end
     
-    for idx = 1,num_g do
-      local m = {}
-      m.src = {}
-      m.src.x = g[idx]["x"]
-      m.src.y = g[idx]["y"]
-      for j = -1,1 do
-        for k = -1,1 do
-          m.dst = {}
-          m.dst.x = m.src.x + j
-          m.dst.y = m.src.y + k
-          m.color = -self.color
-          local game = node:new()
-          game:setGameState(self.A)
-          game:setVars(self)
-          game.color = -self.color
-          --game = node.data:makeCopy(node.data)
-          if game:validate(m) then
-            
-            game:addMove(m)
-            game:apply()
-            --game.A = game.postA
-            
+    -- Goats may only move after all 20 have been placed.
+    if (num_g + self.goatsDead) >= 20 then
+      for idx = 1,num_g do
+        local m = {}
+        m.src = {}
+        m.src.x = g[idx]["x"]
+        m.src.y = g[idx]["y"]
+        for j = -1,1 do
+          for k = -1,1 do
+            m.dst = {}
+            m.dst.x = m.src.x + j
+            m.dst.y = m.src.y + k
+            m.color = -self.color
+            local game = node:new()
+            game:setGameState(self.A)
+            game:setVars(self)
+            game.color = -self.color
+            --game = node.data:makeCopy(node.data)
+            if game:validate(m) then
+              
+              game:addMove(m)
+              game:apply()
+              --game.A = game.postA
+              
 
-            self:add_child(game)
-            --self.children[self.num_children]:addMove(m)
+              self:add_child(game)
+              --self.children[self.num_children]:addMove(m)
+            end
           end
         end
       end

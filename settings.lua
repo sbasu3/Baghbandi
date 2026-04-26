@@ -1,6 +1,42 @@
 require "ui"
 --require ("suit")
 
+local DEPTH_MIN = 1
+local DEPTH_MAX = 4
+local DEPTH_LABEL_BUTTON = nil
+
+local function clampDepth(d)
+  if d < DEPTH_MIN then
+    return DEPTH_MIN
+  end
+  if d > DEPTH_MAX then
+    return DEPTH_MAX
+  end
+  return d
+end
+
+local function updateDepthButtonText()
+  if DEPTH_LABEL_BUTTON ~= nil and settingsMenu ~= nil
+    and settingsMenu.buttonsList ~= nil
+    and settingsMenu.buttonsList[DEPTH_LABEL_BUTTON] ~= nil then
+    settingsMenu.buttonsList[DEPTH_LABEL_BUTTON].text = "Depth: " .. tostring(DEPTH)
+  end
+end
+
+local function setDepth(d, label)
+  local newDepth = clampDepth(d)
+  local changed = (newDepth ~= DEPTH)
+  DEPTH = newDepth
+  updateDepthButtonText()
+
+  if showPopup ~= nil then
+    local popupLabel = label or "Depth Updated"
+    showPopup(popupLabel, "Depth = " .. tostring(DEPTH))
+  elseif changed then
+    love.window.showMessageBox("Depth Updated", "Depth = " .. tostring(DEPTH), info, false)
+  end
+end
+
 function selectTiger()
   PLAYER = -1;
   AI = 1;
@@ -26,29 +62,30 @@ function selectBack()
 end
 
 function selectEasy()
-  DEPTH = 2;
-  if showPopup ~= nil then
-    showPopup("Easy Selected","")
-  else
-    love.window.showMessageBox( "Easy Selected", "", info, false );
-  end
+  setDepth(2, "Easy Selected")
 end
 
 function selectMedium()
-  DEPTH = 3;
-  if showPopup ~= nil then
-    showPopup("Medium Selected","")
-  else
-    love.window.showMessageBox( "Medium Selected", "", info, false );
-  end
+  setDepth(3, "Medium Selected")
 end
 
 function selectHard()
-  DEPTH = 4;
+  setDepth(4, "Hard Selected")
+end
+
+function selectDepthDown()
+  setDepth(DEPTH - 1, "Depth Decreased")
+end
+
+function selectDepthUp()
+  setDepth(DEPTH + 1, "Depth Increased")
+end
+
+function selectDepthInfo()
   if showPopup ~= nil then
-    showPopup("Hard Selected","")
+    showPopup("Current Search Depth", tostring(DEPTH))
   else
-    love.window.showMessageBox( "Hard Selected", "", info, false );
+    love.window.showMessageBox("Current Search Depth", tostring(DEPTH), info, false)
   end
 end
 
@@ -63,6 +100,15 @@ function createSettings()
   settingsMenu:addButton("Easy",size,{x=ww/5,y=(2*hh)/3},selectEasy);
   settingsMenu:addButton("Medium",size,{x=2*ww/5,y=(2*hh)/3},selectMedium);
   settingsMenu:addButton("Hard",size,{x=3*ww/5,y=(2*hh)/3},selectHard);
+
+  local depthBtnSize = {x=ww/10,y=BUTTON_HEIGHT}
+  local depthLabelSize = {x=ww/5,y=BUTTON_HEIGHT}
+  settingsMenu:addButton("-", depthBtnSize, {x=ww/5,y=(5*hh)/6}, selectDepthDown)
+  settingsMenu:addButton("Depth: " .. tostring(DEPTH), depthLabelSize, {x=2*ww/5,y=(5*hh)/6}, selectDepthInfo)
+  DEPTH_LABEL_BUTTON = settingsMenu.buttons
+  settingsMenu:addButton("+", depthBtnSize, {x=3*ww/5,y=(5*hh)/6}, selectDepthUp)
+
+  updateDepthButtonText()
 end
   
 function drawSettingsSuit()

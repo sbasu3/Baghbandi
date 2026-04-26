@@ -443,22 +443,34 @@ function love.mousepressed( x , y , button , isTouch)
   if state == 0 then -- Versions prior to 0.10.0 use the MouseConstant 'l'
     mv = {}
     if N.A[bx][by] == turn then
+      -- Click on own piece: begin selection
       mv.src = {}
       mv.src.x = bx
       mv.src.y = by
       state = 1
-    else
+    elseif turn == 1 then
+      -- Goat player only: clicking any square attempts placement/move
       mv.dst = {}
       mv.dst.x = bx
       mv.dst.y = by
       state = 2
     end
-    
+    -- Tiger player: non-tiger click is ignored; state stays 0
+
   elseif state == 1 then
-    mv.dst = {}
-    mv.dst.x = bx
-    mv.dst.y = by
-    state = 2
+    if N.A[bx][by] == turn then
+      -- Re-select a different own piece without losing the selection state
+      mv.src = {}
+      mv.src.x = bx
+      mv.src.y = by
+      -- state stays 1
+    else
+      -- Commit destination
+      mv.dst = {}
+      mv.dst.x = bx
+      mv.dst.y = by
+      state = 2
+    end
   end
   mv.color = turn
   print("Mouse clicked at",bx,by);

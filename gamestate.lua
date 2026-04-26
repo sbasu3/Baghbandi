@@ -154,6 +154,11 @@ function GS:validate(mv)
 		return false;
 	end
 
+  -- Goats may not move until all 20 have been placed.
+  if mv.color == 1 and (self.goatsBoard + self.goatsDead) < 20 then
+    return false;
+  end
+
 	local X1,Y1 = mv.src.x,mv.src.y;
 	local X2,Y2 = mv.dst.x,mv.dst.y;
   

@@ -85,15 +85,19 @@ end
 function aiMove()
   
   assert(turn == -N.color, "some problem with turn")
+  resetNegamaxStats()
+  startNegamaxMemoryStats()
   N:setValue(negamax(N,DEPTH,-math.huge,math.huge,-N.color))
+  finalizeNegamaxStats()
+  printNegamaxStats(DEPTH)
    
   if N.endgame == true then
     return
   end
 
-  -- Sort descending (1 = highest value first): negamax values are from the
-  -- current player's perspective, so the highest-valued child is always best.
-  N:sort_children(N.color);
+  -- Sort descending (1 = highest value first): negamax values are always
+  -- from the moving player's perspective, so highest = best regardless of color.
+  N:sort_children(1);
 
   if N.num_children == 0 then
     N.endgame = true
@@ -128,6 +132,10 @@ function playerMove()
     
   if not N:validate(mv) then
     -- Invalid selection should not lock the player in state 2.
+    local srcStr = mv.src and (mv.src.x .. "," .. mv.src.y) or "nil"
+    print("[PLAYER MOVE] validate FAILED src=" .. srcStr
+      .. " dst=" .. mv.dst.x .. "," .. mv.dst.y
+      .. " color=" .. tostring(mv.color))
     mv = nil
     state = 0
     return
@@ -137,10 +145,17 @@ function playerMove()
   local nextNode = N:getChildWithMove(mv)
   if nextNode == nil then
     -- If move matching fails (stale/partial input), allow retry.
+    local srcStr = mv.src and (mv.src.x .. "," .. mv.src.y) or "nil"
+    print("[PLAYER MOVE] getChildWithMove FAILED src=" .. srcStr
+      .. " dst=" .. mv.dst.x .. "," .. mv.dst.y
+      .. " color=" .. tostring(mv.color)
+      .. " (" .. tostring(N.num_children) .. " children)")
     mv = nil
     state = 0
     return
   end
+  print("[PLAYER MOVE] OK src=" .. (mv.src and (mv.src.x..","..mv.src.y) or "nil")
+    .. " dst=" .. mv.dst.x .. "," .. mv.dst.y)
 
   N = nextNode
 
