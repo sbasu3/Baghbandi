@@ -56,7 +56,9 @@ function ui:draw()
   --love.graphics.setBackgroundColor(0,0.5,0.5,1);
   love.graphics.clear();
   love.graphics.reset();
-  love.graphics.draw(menu, menuquad, 0, 0);
+  local bgScaleX = ww / menu:getWidth();
+  local bgScaleY = hh / menu:getHeight();
+  love.graphics.draw(menu, 0, 0, 0, bgScaleX, bgScaleY);
   love.graphics.reset();
   
   
@@ -71,12 +73,15 @@ function ui:draw()
 
   local x0 = 0.9*ww;
   local y0 = 0.05*hh;
+  local iconX = x0 - SIDE;
+  local iconY = y0 - SIDE;
+  local iconSize = MUTE_ICON_SIZE;
   
   local hot = false;
   if OS == 1 then
     local mx,my = love.mouse.getPosition();
 
-    hot = (mx > x0) and (mx < (x0 + Radius)) and (my > y0) and ( my < y0 + Radius);
+    hot = (mx > iconX) and (mx < (iconX + iconSize)) and (my > iconY) and ( my < iconY + iconSize);
     local muteNow = love.mouse.isDown(1);
     if muteNow and hot then
       love.audio.stop();
@@ -84,7 +89,7 @@ function ui:draw()
   elseif OS == 2 then
     local mx = touchX;
     local my = touchY;
-    hot = (mx > x0) and (mx < (x0 + Radius)) and (my > y0) and ( my < y0 + Radius);
+    hot = (mx > iconX) and (mx < (iconX + iconSize)) and (my > iconY) and ( my < iconY + iconSize);
     if hot and released then
       love.audio.stop();
     end
@@ -96,7 +101,7 @@ function ui:draw()
     love.graphics.setColor(1,215/255,0,1);
   end
   --love.graphics.circle("fill", x0, y0, Radius );
-  love.graphics.draw(mute,mutequad,x0-SIDE,y0-SIDE);
+  love.graphics.draw(mute,mutequad,iconX,iconY,0,muteScale,muteScale);
   
   love.graphics.setColor(0.5,0,0,1);
   love.graphics.print(titleText,font_64,(ww/2) - (titleTextW/2), hh/8);
@@ -127,7 +132,7 @@ function ui:draw()
       local mx = touchX;
       local my = touchY;
       
-      local hot = (mx > bx) and (mx < (bx + buttonWidth)) and (my > by) and ( my < by + BUTTON_HEIGHT);
+      local hot = (mx > bx) and (mx < (bx + button.size.x)) and (my > by) and ( my < by + button.size.y);
 
       if hot then
         love.graphics.setColor(1,1,0,1);
@@ -155,7 +160,7 @@ function ui:draw()
     local textH = font_20:getHeight(button.text);
     
     --love.graphics.print(button.text,font_20,bx - (textW/2),by + (textH/2));
-    love.graphics.print(button.text,font_20,bx+(textW/2),by + (textH/2));
+    love.graphics.print(button.text,font_20,bx + ((button.size.x - textW)/2),by + (textH/2));
 
   end
 end

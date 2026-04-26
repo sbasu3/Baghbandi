@@ -1,39 +1,43 @@
 function Heuristic(n)
-  -- retuns positive value for goat
-  -- negative value for tiger
-  
-  --check for game end condition
-  --return huge val if game ends
-  -- <1> goats eaten > 5
-  -- <2> All tigers trapped
+  -- Positive score favors goats, negative favors tigers.
+  -- Keep scores finite so alpha-beta remains stable.
+  local WIN_SCORE = 100000
+
   if n.goatsDead > 5 then
-    return -math.huge
-  elseif n.tigersBlocked == 4 then
-    return math.huge
+    return -WIN_SCORE
+  elseif n.tigersBlocked >= 4 then
+    return WIN_SCORE
   end
-  
-  
-  --check if any tiger trapped
-  --return a positive value if goat
-  --negative otherwise
-  if n.tigersBlocked > 0 then
-    return n.color * ( math.huge/4) * n.tigersBlocked
-  end
-  
-  --check if any goat eaten
-  --return a small positive value if goat
-  --return large negative otherwise
 
+  local tiger_list, tigerCount = getTigerLoc(n.A)
+  local goat_list, goatCount = getGoatLoc(n.A)
 
-  if  n.goatsDead > 0 and n.color == 1 then
-    return -(math.huge/20) * n.goatsDead
-  elseif n.goatsDead > 0 and n.color == -1 then
-    return -math.huge
-  else
-    return 0
+  local score = 0
+
+  -- Captures are the strongest non-terminal signal.
+  score = score - (120 * n.goatsDead)
+
+  -- Blocking tigers is the main goat objective.
+  score = score + (85 * n.tigersBlocked)
+
+  -- More goats on board generally means stronger containment potential.
+  score = score + (4 * goatCount)
+
+  -- Reward central control for goats and penalize central tiger control.
+  local centerControl = 0
+  for i = 1,goatCount do
+    if n:isSpecial(goat_list[i].x, goat_list[i].y) then
+      centerControl = centerControl + 1
+    end
   end
-  
-  
+  for i = 1,tigerCount do
+    if n:isSpecial(tiger_list[i].x, tiger_list[i].y) then
+      centerControl = centerControl - 1
+    end
+  end
+  score = score + (6 * centerControl)
+
+  return score
 end
 
 
@@ -89,7 +93,7 @@ function aiMove()
 
   -- Sort descending (1 = highest value first): negamax values are from the
   -- current player's perspective, so the highest-valued child is always best.
-  N:sort_children(1);
+  N:sort_children(N.color);
 
   if N.num_children == 0 then
     N.endgame = true
@@ -116,21 +120,34 @@ function playerMove()
   if state ~= 2 then
     return;
   end
+
+  if mv == nil then
+    state = 0
+    return
+  end
     
-  if N:validate(mv) then
-    N:setValue(negamax(N,DEPTH,-math.huge,math.huge,-N.color))
-    local nextNode = N:getChildWithMove(mv)
-    if nextNode == nil then
-      return
-    end
-    N = nextNode
- 
-  
-    turn = -turn;
-    iteration = iteration + 1;
+  if not N:validate(mv) then
+    -- Invalid selection should not lock the player in state 2.
     mv = nil
     state = 0
+    return
   end
+
+  N:setValue(negamax(N,DEPTH,-math.huge,math.huge,-N.color))
+  local nextNode = N:getChildWithMove(mv)
+  if nextNode == nil then
+    -- If move matching fails (stale/partial input), allow retry.
+    mv = nil
+    state = 0
+    return
+  end
+
+  N = nextNode
+
+  turn = -turn;
+  iteration = iteration + 1;
+  mv = nil
+  state = 0
 end
   
 

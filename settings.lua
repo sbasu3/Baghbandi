@@ -63,7 +63,6 @@ function createSettings()
   settingsMenu:addButton("Easy",size,{x=ww/5,y=(2*hh)/3},selectEasy);
   settingsMenu:addButton("Medium",size,{x=2*ww/5,y=(2*hh)/3},selectMedium);
   settingsMenu:addButton("Hard",size,{x=3*ww/5,y=(2*hh)/3},selectHard);
-  settingsMenu:addButton("Back",size,{x=ww/2,y=(4*hh)/5},selectBack);
 end
   
 function drawSettingsSuit()

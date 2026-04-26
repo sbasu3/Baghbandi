@@ -35,6 +35,69 @@ function closePopup()
   end
 end
 
+function isInsideRect(px, py, x, y, w, h)
+  return (px >= x) and (px <= x + w) and (py >= y) and (py <= y + h)
+end
+
+function getBackButtonRect()
+  local ww = love.graphics.getWidth()
+  local hh = love.graphics.getHeight()
+  local w = math.max(120, ww * 0.08)
+  local h = math.max(44, hh * 0.055)
+  local margin = 20
+  local x = ww - w - margin
+  local y = hh - h - margin
+  return x, y, w, h
+end
+
+function drawBackButton()
+  local x, y, w, h = getBackButtonRect()
+  local mx = 0
+  local my = 0
+
+  if OS == 2 then
+    mx = touchX
+    my = touchY
+  else
+    mx, my = love.mouse.getPosition()
+  end
+
+  local hot = isInsideRect(mx, my, x, y, w, h)
+
+  if hot then
+    love.graphics.setColor(1,1,0,1)
+  else
+    love.graphics.setColor(1,215/255,0,1)
+  end
+
+  love.graphics.rectangle("fill", x, y, w, h, 8, 8)
+  love.graphics.setColor(0,0,0,1)
+
+  local label = "< Back"
+  local textW = font_20:getWidth(label)
+  local textH = font_20:getHeight(label)
+  love.graphics.print(label, font_20, x + (w - textW) / 2, y + (h - textH) / 2)
+end
+
+function handleBackButtonPress(x, y)
+  local bx, by, bw, bh = getBackButtonRect()
+  if not isInsideRect(x, y, bx, by, bw, bh) then
+    return false
+  end
+
+  if uistate == 1 then
+    love.event.quit()
+    return true
+  end
+
+  if uistate == 3 then
+    resetMatch()
+  end
+
+  uistate = 1
+  return true
+end
+
 function drawPopup()
   if popup == nil then
     return
@@ -130,6 +193,8 @@ function love.load(arg)
 
   BORDER = 32;
   BSIZE = BORDER;
+  BOARD_ORIGIN_X = BSIZE;
+  BOARD_ORIGIN_Y = BSIZE;
   
   OFFSETX = 0;
   OFFSETY = 0;
@@ -142,6 +207,7 @@ function love.load(arg)
   
   Radius = 0.05*height;
   SIDE = 0.707*Radius;
+  MUTE_ICON_SIZE = 2 * SIDE;
   
   font_12 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",12);
   font_16 = love.graphics.newFont("assets/PartyConfettiRegular-eZOn3.ttf",16);
@@ -164,12 +230,13 @@ function love.load(arg)
 	tiger = love.graphics.newImage("assets/images/tiger.png");
   menu = love.graphics.newImage("assets/images/44780.jpg");
   mute = love.graphics.newImage("assets/images/icons8-no-audio-50.png");
+  muteScale = MUTE_ICON_SIZE / mute:getWidth();
   
 	myquad = love.graphics.newQuad(0 , 0, SIZE, SIZE , SIZE, SIZE);
 	gquad = love.graphics.newQuad(0,0,TIGERSIZE,TIGERSIZE,TIGERSIZE,TIGERSIZE);
 	tquad = love.graphics.newQuad(0,0,0.6*GOATSIZE,GOATSIZE,0.6*GOATSIZE,GOATSIZE);
   menuquad = love.graphics.newQuad(0 , 0, width, height , width, height);
-  mutequad = love.graphics.newQuad(0,0,width/20,width/20,width/20,width/20);
+  mutequad = love.graphics.newQuad(0,0,mute:getWidth(),mute:getHeight(),mute:getWidth(),mute:getHeight());
   
   sourceMain = love.audio.newSource( "assets/sounds/554__bebeto__ambient-loop.mp3", "stream");
   sourceMain:setLooping(true)
@@ -241,7 +308,9 @@ function drawGame()
   
   love.graphics.clear();
 	love.graphics.reset();
-  love.graphics.draw(board, myquad, 0, 0);
+  local boardScaleX = SIZE / board:getWidth();
+  local boardScaleY = SIZE / board:getHeight();
+  love.graphics.draw(board, 0, 0, 0, boardScaleX, boardScaleY);
 	drawBoard(SIZE,BSIZE);
   love.graphics.reset();
   frame = frame + 1;
@@ -301,23 +370,18 @@ function drawGame()
 	for i=1,5 do
     for j = 1,5 do
       if N.A[i][j] ~= nil then
+        local nodeX = BOARD_ORIGIN_X + GAP * (i - 1)
+        local nodeY = BOARD_ORIGIN_Y + GAP * (j - 1)
+
         if N.A[i][j] == 1 then
-          --love.graphics.setColor(254,100,46,255);
-          --love.graphics.draw(goat,gquad,BSIZE+GAP*(i-1),BSIZE+GAP*(j-1));
-          if OS == 1 then
-            love.graphics.draw(goat,gquad,GAP*(i-1),GAP*(j-1));
-          else
-            love.graphics.draw(goat,gquad,GAP*(i-1)-OFFSETX,GAP*(j-1)-OFFSETY);
-          end
+          local goatW = TIGERSIZE
+          local goatH = TIGERSIZE
+          love.graphics.draw(goat,gquad,nodeX - (goatW/2),nodeY - (goatH/2));
           
         elseif N.A[i][j] == -1 then
-          --love.graphics.draw(tiger,tquad,BSIZE+GAP*(i-1),BSIZE+GAP*(j-1));
-          
-          if OS == 1 then
-            love.graphics.draw(tiger,tquad,GAP*(i-1),GAP*(j-1));
-          else
-            love.graphics.draw(tiger,tquad,GAP*(i-1)-OFFSETX,GAP*(j-1)-OFFSETY);
-          end
+          local tigerW = 0.6 * GOATSIZE
+          local tigerH = GOATSIZE
+          love.graphics.draw(tiger,tquad,nodeX - (tigerW/2),nodeY - (tigerH/2));
           
         end
         if N.A[i][j] ~= 0 then
@@ -342,6 +406,8 @@ function love.draw()
     drawHowTo();
   end
 
+  drawBackButton()
+
   drawPopup()
   
 end
@@ -350,6 +416,10 @@ function love.mousepressed( x , y , button , isTouch)
 
   if popup ~= nil then
     closePopup()
+    return
+  end
+
+  if handleBackButtonPress(x, y) then
     return
   end
 
@@ -411,5 +481,14 @@ function love.touchreleased( id, x, y, dx, dy, pressure )
   touchX = x;
   touchY = y;
   released = true;
+
+  if popup ~= nil then
+    closePopup()
+    return
+  end
+
+  if handleBackButtonPress(x, y) then
+    return
+  end
 end
 
